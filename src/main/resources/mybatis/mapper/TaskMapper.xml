@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 使用接口 代理的方式 namespace必须和接口的全路径名称一致 -->
+<mapper namespace="edu.fzu.qujing.mapper.TaskMapper">
+    <select id="getCountBySenderId" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM task
+        WHERE senderid = #{studentId}
+    </select>
+
+    <update id="updateTask" flushCache="true">
+        UPDATE task
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="points != null">
+                points = #{points},
+            </if>
+            <if test="deadline != null">
+                deadline = #{deadline},
+            </if>
+            <if test="expedited != null">
+                expedited = #{expedited},
+            </if>
+            <if test="senderAccomplish != null">
+                senderAccomplish = #{senderAccomplish},
+            </if>
+            <if test="receiverAccomplish != null">
+                receiverAccomplish = #{receiverAccomplish},
+            </if>
+            <if test="content != null and content != ''">
+                content = #{content},
+            </if>
+            <if test="taskType != null and taskType.id != null">
+                ttid = #{taskType.id},
+            </if>
+            <if test="senderCancle != null">
+                senderCancle = #{senderCancle},
+            </if>
+            <if test="receiverCancle != null">
+                receiverCancle = #{receiverCancle},
+            </if>
+            <if test="senderid != null and senderid != ''">
+                senderid = #{senderid},
+            </if>
+            <if test="receiverid != null and receiverid != ''">
+                receiverid = #{receiverid},
+            </if>
+            <if test="publishTime != null">
+                publishTime = #{publishTime}
+            </if>
+        </set>
+        <where>
+            id = #{id}
+        </where>
+    </update>
+
+    <select id="getCountByReceiverId" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM task
+        WHERE receiverid = #{studentId}
+    </select>
+
+</mapper>

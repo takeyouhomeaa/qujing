@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 使用接口 代理的方式 namespace必须和接口的全路径名称一致 -->
+<mapper namespace="edu.fzu.qujing.mapper.FeedBackMapper">
+
+    <select id="getCount" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM feedback
+    </select>
+
+    <insert id="addFeedBack">
+        INSERT INTO feedback
+        (content,type,taskId,flat,time)
+        VALUES (#{content},#{type.id},#{task.id},#{flat},#{time})
+    </insert>
+
+
+</mapper>

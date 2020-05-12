@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 使用接口 代理的方式 namespace必须和接口的全路径名称一致 -->
+<mapper namespace="edu.fzu.qujing.mapper.ExpensesMapper">
+
+    <select id="getCount" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM expensesrecord
+        WHERE userID = #{userId}
+    </select>
+
+    <insert id="addExpensesRecord">
+        INSERT INTO expensesrecord
+        (amount,time,userId,type)
+        VALUES (#{amount},#{time},#{userId},#{type.id})
+    </insert>
+
+    <resultMap id="expenses" type="edu.fzu.qujing.bean.Expenses">
+        <id property="id" column="erid"></id>
+        <result property="amount" column="eramount"></result>
+        <result property="time" column="ertime"></result>
+        <result property="userId" column="eruserId"></result>
+        <association property="type" javaType="edu.fzu.qujing.bean.Type">
+            <id property="id" column="etid"></id>
+            <result property="name" column="etname"></result>
+        </association>
+    </resultMap>
+
+    <select id="listExpense" resultMap="expenses">
+        SELECT er.id erid,
+        er.amount eramount,
+        er.time ertime,
+        er.userId eruserId,
+        er.type ertype,
+        et.id etid,
+        et.name etname
+        FROM expensesrecord er
+        INNER JOIN consumptiontype et ON er.type = et.id
+        <where>
+            <if test="expenses.userId != null and expenses.userId != ''">
+                er.userId = #{expenses.userId}
+            </if>
+            <if test="time != null and time != ''">
+                AND DATE_FORMAT(er.time,'%Y-%m-%d') = #{time}
+            </if>
+            <if test="expenses.type.id != null">
+                AND er.type = #{expenses.type.id}
+            </if>
+        </where>
+        ORDER BY er.id DESC
+        LIMIT #{pos},#{pages}
+    </select>
+
+
+</mapper>

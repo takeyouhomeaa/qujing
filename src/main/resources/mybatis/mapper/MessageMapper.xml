@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 使用接口 代理的方式 namespace必须和接口的全路径名称一致 -->
+<mapper namespace="edu.fzu.qujing.mapper.MessageMapper">
+    <select id="getCountToReceiveId" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM message
+        WHERE receiveId = #{receiveId}
+    </select>
+
+    <insert id="addMessage">
+        INSERT INTO message
+        (content,messageState,messageType,receiveId,publisherId,time)
+        VALUES (#{content},#{messageState},#{messageType.id},
+        #{receiveId},#{publisherId},#{time})
+    </insert>
+
+    <resultMap id="message" type="edu.fzu.qujing.bean.Message">
+        <id property="id" column="mid"></id>
+        <result property="content" column="mcontent"></result>
+        <result property="messageState" column="mmessageState"></result>
+        <result property="receiveId" column="mreceiveId"></result>
+        <result property="publisherId" column="mpublisherId"></result>
+        <result property="time" column="mtime"></result>
+        <association property="messageType" javaType="edu.fzu.qujing.bean.MessageType">
+            <id property="id" column="mtid"></id>
+        </association>
+    </resultMap>
+    <select id="listMessage" resultMap="message">
+        SELECT
+        m.id mid,
+        m.content mcontent,
+        m.messageState mmessageState,
+        m.messageType mmessageType,
+        mt.id mtid,
+        mt.name mtname,
+        m.receiveId mreceiveId,
+        m.publisherId mpublisherId,
+        m.time mtime
+        FROM message m
+        INNER JOIN messagetype mt on m.messageType = mt.id
+        <where>
+            <choose>
+                <when test="message.receiveId != null and message.receiveId != ''">
+                    m.receiveId = #{message.receiveId}
+                </when>
+                <when test="message.publisherId != null and message.publisherId != ''">
+                    m.publisherId = #{message.publisherId}
+                </when>
+            </choose>
+            <if test="message.messageState != null ">
+                AND m.messageState = #{message.messageState}
+            </if>
+            <if test="message.messageType != null and message.messageType.id != null ">
+                AND m.messageType = #{message.messageType.id}
+            </if>
+        </where>
+        ORDER BY m.id DESC
+    </select>
+    <select id="getCountToPublisherId" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM message
+        WHERE publisherId = #{publisherId}
+    </select>
+</mapper>

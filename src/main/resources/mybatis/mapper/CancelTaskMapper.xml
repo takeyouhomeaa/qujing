@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 使用接口 代理的方式 namespace必须和接口的全路径名称一致 -->
+<mapper namespace="edu.fzu.qujing.mapper.CancelTaskMapper">
+    <insert id="addCancelTask">
+        INSERT INTO cancletask
+        (content,taskId,flat,type,time)
+        VALUES (#{content},#{task.id},#{flat},#{type.id},#{time})
+    </insert>
+</mapper>

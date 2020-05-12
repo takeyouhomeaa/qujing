@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 使用接口 代理的方式 namespace必须和接口的全路径名称一致 -->
+<mapper namespace="edu.fzu.qujing.mapper.TypeMapper">
+    <select id="listUserState" resultType="edu.fzu.qujing.bean.Type">
+        SELECT id,name
+        FROM userState
+    </select>
+    <select id="listTaskType" resultType="edu.fzu.qujing.bean.Type">
+         SELECT id,name
+        FROM taskType
+    </select>
+
+    <select id="listNextTaskType" resultType="edu.fzu.qujing.bean.Type">
+        <if test="taskTypeId == 1">
+            SELECT id,name
+            FROM expressageType
+        </if>
+        <if test="taskTypeId == 2 ">
+            SELECT id,name
+            FROM thingsTpye
+        </if>
+        <if test="taskTypeId == 3">
+            SELECT id,name
+            FROM thingsTpye
+        </if>
+        <if test="taskTypeId == 4">
+            SELECT id,name
+            FROM diningType
+        </if>
+        <if test="taskTypeId == 5"></if>
+        <if test="taskTypeId == 6"></if>
+    </select>
+
+
+</mapper>

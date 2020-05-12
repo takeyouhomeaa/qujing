@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 使用接口 代理的方式 namespace必须和接口的全路径名称一致 -->
+<mapper namespace="edu.fzu.qujing.mapper.RechargeMapper">
+
+    <select id="getCount" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM rechargerecord
+        WHERE userId = #{userId}
+    </select>
+
+    <insert id="addRecharge">
+        INSERT INTO rechargerecord
+        (amount,time,userId)
+        VALUES (#{amount},#{time},#{userId})
+    </insert>
+
+    <select id="listRechargeRecord" resultType="edu.fzu.qujing.bean.Recharge">
+        SELECT id, amount,time,userId
+        FROM rechargerecord
+        <where>
+            <if test="recharge.userId != null and recharge.userId != ''">
+                userId = #{recharge.userId}
+            </if>
+            <if test="time != null and time != ''">
+                AND DATE_FORMAT(time,'%Y-%m-%d') = #{time}
+            </if>
+        </where>
+        ORDER BY id DESC
+        LIMIT #{pos},#{pages}
+    </select>
+</mapper>

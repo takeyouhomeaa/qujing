@@ -14,6 +14,12 @@ import java.util.Map;
 
 public class JwtUtil {
 
+    public static final Integer JWT_EXPIRE = 1000*60*30;
+
+    public static final String AUTH_HEADER = "Authorization";
+
+    public static final String JWT_ID = "ozg";
+
     private static String key = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmM3wrOX25R1pWBO0QIdWf/HF7+U2re9cNsdKoNR+TNx/zPJgYhKHlTE5ijqRyTtm31lVY9LA2gGIhMGUugwDr4vqcyyWHtBNDPhOr/SsOPDlupVTiz4ju3m6ajZZxxYLzLNfJ3pTsaijdIPW8A0npqkZdyUCHmqMMIsNYY2EesCDWKNxtaGCAKNxVc0lH2IAbtg5Ts54ujliFBv7VbuBtuiKJlOsd66LB4pYRqIo8/qSA8jAKuO6HHDMb5AyVoCRY8oxlnKJzXHr/AeVqdtpwJ8KG57/pVLpN9k+QFZM4MxOTtIhm8ODE26Ifvx+HJF0v4LqY9Jl/zTZGGcEVkgN8wIDAQAB";
 
     public static String creatJwt(String id, String subject, long ttlMillis) {
@@ -57,6 +63,6 @@ public class JwtUtil {
     }
 
     public static void main(String[] args) {
-        System.out.println(generalKey().getEncoded());
+        System.out.println(creatJwt("ozg","221701227",1000 * 60 * 10));
     }
 }

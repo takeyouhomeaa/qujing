@@ -91,4 +91,9 @@ public class AuthenticatedController {
             return ResponseEntity.status(403).body("Verification code mismatch");
         }
     }
+
+    @GetMapping("/logout")
+    public ResponseEntity<String> logout() {
+        return ResponseEntity.ok("Logout");
+    }
 }

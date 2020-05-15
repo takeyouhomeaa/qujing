@@ -52,8 +52,8 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
         }catch (DisabledAccountException e) {
             return ResponseEntity.status(404).body("Account does not exist");
         }
-        String jwtToken = JwtUtil.creatJwt("ozg",userToCheck.getStudentId(),1000*60*30);
-        response.setHeader("Authorization",jwtToken);
+        String jwtToken = JwtUtil.creatJwt(JwtUtil.JWT_ID,userToCheck.getStudentId(),JwtUtil.JWT_EXPIRE);
+        response.setHeader(JwtUtil.AUTH_HEADER,jwtToken);
         return ResponseEntity.ok("success");
     }
 

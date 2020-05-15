@@ -56,13 +56,14 @@ public class ShiroConfig {
         map.put("/v2/**", "anon");
         map.put("/webjars/**", "anon");
         map.put("/configuration/**", "anon");
-        map.put("/logout", "logout"); // 退出登录
+        map.put("/authenticated/logout", "logout"); // 退出登录
         map.put("/**","authc");
         bean.setFilterChainDefinitionMap(map);
 
         return bean;
     }
 
+    //有问题
     @Bean
     public ModularRealmAuthenticator authenticator() {
         ModularRealmAuthenticator authenticator = new ModularRealmAuthenticator();

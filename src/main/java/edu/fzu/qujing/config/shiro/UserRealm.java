@@ -24,6 +24,11 @@ public class UserRealm extends AuthorizingRealm {
     }
 
     @Override
+    public boolean supports(AuthenticationToken token) {
+        return token instanceof UsernamePasswordToken;
+    }
+
+    @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
         UsernamePasswordToken token = (UsernamePasswordToken) authenticationToken;
         User user = new User();
@@ -65,8 +70,4 @@ public class UserRealm extends AuthorizingRealm {
         return null;
     }
 
-    public static void main(String[] args) {
-        String md5 = new SimpleHash("MD5", "123456", "221701227", 1024).toBase64();
-        System.out.println(md5);
-    }
 }

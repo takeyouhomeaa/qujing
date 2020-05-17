@@ -11,11 +11,15 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ByteSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 
+import javax.annotation.Resource;
 import java.util.Date;
 
 public class UserRealm extends AuthorizingRealm {
-    @Autowired
+
+    @Lazy
+    @Resource
     UserService userService;
 
     @Override
@@ -31,13 +35,13 @@ public class UserRealm extends AuthorizingRealm {
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
         UsernamePasswordToken token = (UsernamePasswordToken) authenticationToken;
-        User user = new User();
-        if (token.getUsername().indexOf("@") == -1) {
-            user.setStudentId(token.getUsername());
+        String username = token.getUsername();
+        User userToCheck;
+        if (username.indexOf("@") == -1) {
+            userToCheck = userService.getUserToCheckByStudentId(username);
         }else {
-            user.setEmail(token.getUsername());
+            userToCheck = userService.getUserToCheckByEmail(username);
         }
-        User userToCheck = userService.getUserToCheck(user);
         if(userToCheck == null){
             throw new UnknownAccountException();
         }
@@ -45,13 +49,9 @@ public class UserRealm extends AuthorizingRealm {
             Date nowTime = new Date();
             Date endTime = userToCheck.getEndTime();
             if (endTime != null && nowTime.compareTo(endTime) != -1) {
-                userToCheck.setState(1);
-                user.setState(1);
-                userService.updateUser(user);
+                userService.updateState(userToCheck.getStudentId(),1);
             }else if(endTime != null && nowTime.compareTo(endTime) == -1){
-                userToCheck.setState(2);
-                user.setState(2);
-                userService.updateUser(user);
+                userService.updateState(userToCheck.getStudentId(),2);
                 throw new  LockedAccountException();
             }
 

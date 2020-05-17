@@ -8,29 +8,37 @@ import org.apache.shiro.authc.pam.AuthenticationStrategy;
 import org.apache.shiro.authc.pam.FirstSuccessfulStrategy;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.mgt.DefaultSessionStorageEvaluator;
+import org.apache.shiro.mgt.DefaultSubjectDAO;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.mgt.SessionStorageEvaluator;
 import org.apache.shiro.realm.AuthorizingRealm;
+import org.apache.shiro.realm.Realm;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.mgt.WebSecurityManager;
+import org.apache.shiro.web.util.WebUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.servlet.Filter;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.*;
 
 @Configuration
 public class ShiroConfig {
 
+
     @Bean
     public FilterRegistrationBean<Filter> registrationBean(@Qualifier("jwtFilter") JwtFilter filter) {
-        FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<Filter>(filter);
+        FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>(filter);
         registration.setEnabled(false);
         return registration;
     }
@@ -57,7 +65,7 @@ public class ShiroConfig {
         map.put("/webjars/**", "anon");
         map.put("/configuration/**", "anon");
         map.put("/authenticated/logout", "logout"); // 退出登录
-        map.put("/**","authc");
+        map.put("/**","jwtFilter,authc");
         bean.setFilterChainDefinitionMap(map);
 
         return bean;
@@ -66,7 +74,7 @@ public class ShiroConfig {
     //有问题
     @Bean
     public ModularRealmAuthenticator authenticator() {
-        ModularRealmAuthenticator authenticator = new ModularRealmAuthenticator();
+        ModularRealmAuthenticator authenticator = new MultiRealmAuthenticator();
         AuthenticationStrategy strategy = new FirstSuccessfulStrategy();
         authenticator.setAuthenticationStrategy(strategy);
         return authenticator;
@@ -82,15 +90,25 @@ public class ShiroConfig {
 
     @Bean("securityManager")
     @DependsOn("hashedCredentialsMatcher")
-    public SecurityManager securityManager(@Qualifier("userRealm") UserRealm userRealmm){
+    public SecurityManager securityManager(@Qualifier("userRealm") UserRealm userRealm){
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
-        securityManager.setRealm(userRealmm);
+        List<Realm> list = new ArrayList<>();
+        list.add(userRealm);
+        list.add(jwtRealm());
+        securityManager.setRealms(list);
+
+        DefaultSubjectDAO subjectDAO = new DefaultSubjectDAO();
+        subjectDAO.setSessionStorageEvaluator(sessionStorageEvaluator());
+        securityManager.setSubjectDAO(subjectDAO);
+
         return securityManager;
     }
 
     @Bean
     public JwtRealm jwtRealm() {
         JwtRealm jwtRealm = new JwtRealm();
+        CredentialsMatcher credentialsMatcher = new JwtCredentialsMatcher();
+        jwtRealm.setCredentialsMatcher(credentialsMatcher);
         return jwtRealm;
     }
 

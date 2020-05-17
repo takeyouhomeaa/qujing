@@ -1,6 +1,8 @@
 package edu.fzu.qujing.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import edu.fzu.qujing.bean.Task;
 import org.apache.ibatis.annotations.Param;
 
@@ -13,7 +15,7 @@ public interface TaskMapper extends BaseMapper<Task> {
      * @param studentId 学号
      * @return 任务数量
      */
-    public Integer getCountBySenderId(@Param("studentId") String studentId);
+    Integer getCountBySenderId(@Param("studentId") String studentId);
 
 
     /**
@@ -22,9 +24,22 @@ public interface TaskMapper extends BaseMapper<Task> {
      * @param studentId 学号
      * @return 任务数量
      */
-    public Integer getCountByReceiverId(@Param("studentId") String studentId);
+    Integer getCountByReceiverId(@Param("studentId") String studentId);
+
+
+    /**
+     * 查询的任务大概信息
+     * @return
+     */
+    IPage<Task> listSimpleTask(Page<Task> page,@Param("state") Integer state);
+
+    /**
+     * 通过任务ID 查找对应任务的详细信息
+     * @param task
+     * @return
+     */
+    Task getTaskById(Task task);
 
 
 
-    public void updateTask(Task task);
 }

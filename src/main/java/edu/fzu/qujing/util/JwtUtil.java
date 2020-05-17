@@ -20,7 +20,7 @@ public class JwtUtil {
 
     public static final String JWT_ID = "ozg";
 
-    private static String key = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmM3wrOX25R1pWBO0QIdWf/HF7+U2re9cNsdKoNR+TNx/zPJgYhKHlTE5ijqRyTtm31lVY9LA2gGIhMGUugwDr4vqcyyWHtBNDPhOr/SsOPDlupVTiz4ju3m6ajZZxxYLzLNfJ3pTsaijdIPW8A0npqkZdyUCHmqMMIsNYY2EesCDWKNxtaGCAKNxVc0lH2IAbtg5Ts54ujliFBv7VbuBtuiKJlOsd66LB4pYRqIo8/qSA8jAKuO6HHDMb5AyVoCRY8oxlnKJzXHr/AeVqdtpwJ8KG57/pVLpN9k+QFZM4MxOTtIhm8ODE26Ifvx+HJF0v4LqY9Jl/zTZGGcEVkgN8wIDAQAB";
+    private static final String key = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmM3wrOX25R1pWBO0QIdWf/HF7+U2re9cNsdKoNR+TNx/zPJgYhKHlTE5ijqRyTtm31lVY9LA2gGIhMGUugwDr4vqcyyWHtBNDPhOr/SsOPDlupVTiz4ju3m6ajZZxxYLzLNfJ3pTsaijdIPW8A0npqkZdyUCHmqMMIsNYY2EesCDWKNxtaGCAKNxVc0lH2IAbtg5Ts54ujliFBv7VbuBtuiKJlOsd66LB4pYRqIo8/qSA8jAKuO6HHDMb5AyVoCRY8oxlnKJzXHr/AeVqdtpwJ8KG57/pVLpN9k+QFZM4MxOTtIhm8ODE26Ifvx+HJF0v4LqY9Jl/zTZGGcEVkgN8wIDAQAB";
 
     public static String creatJwt(String id, String subject, long ttlMillis) {
         long nowMillis = System.currentTimeMillis();

@@ -30,7 +30,6 @@ spring:
       min-evictable-idle-time-millis: 30000
       filters: stat
       async-init: true
-
   redis:
     host: 49.234.86.39
     port: 6379
@@ -40,11 +39,6 @@ spring:
 mybatis-plus:
   mapper-locations: classpath*:mybatis/mapper/*.xml
   config-location: classpath:mybatis/mybatis-conf.xml
-  global-config:
-    refresh-mapper: true
-    cache-enabled: true
-
-
 
 
 
@@ -77,9 +71,6 @@ spring:
       async-init: true
 mybatis-plus:
   mapper-locations: classpath*:mybatis/mapper/*.xml
-  global-config:
-    refresh-mapper: true
-    cache-enabled: true
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     cache-enabled: true

@@ -17,7 +17,6 @@
         <result property="username" column="username"></result>
         <result property="points" column="points"></result>
         <result property="state" column="state"></result>
-        <result property="startTime" column="startTime"></result>
         <result property="endTime" column="endTime"></result>
         <result property="receiveTaskNumber" column="receiveTaskNumber"></result>
         <result property="maliciousAcceptanceNumber" column="maliciousAcceptanceNumber"></result>
@@ -41,18 +40,9 @@
             <result property="points" column="tpoints"></result>
             <result property="deadline" column="tdeadline"></result>
             <result property="expedited" column="texpedited"></result>
-            <result property="senderAccomplish" column="tsenderAccomplish"></result>
-            <result property="receiverAccomplish" column="treceiverAccomplish"></result>
             <result property="content" column="tcontent"></result>
-            <result property="senderAccomplish" column="tsenderCancle"></result>
-            <result property="receiverAccomplish" column="treceiverCancle"></result>
             <result property="senderid" column="tsenderid"></result>
             <result property="receiverid" column="treceiverid"></result>
-            <result property="publishTime" column="tpublishTime"></result>
-            <association property="taskType" javaType="edu.fzu.qujing.bean.Tasktype">
-                <id property="id" column="ttid"></id>
-                <id property="name" column="ttname"></id>
-            </association>
         </collection>
     </resultMap>
 
@@ -66,18 +56,9 @@
             <result property="points" column="tpoints"></result>
             <result property="deadline" column="tdeadline"></result>
             <result property="expedited" column="texpedited"></result>
-            <result property="senderAccomplish" column="tsenderAccomplish"></result>
-            <result property="receiverAccomplish" column="treceiverAccomplish"></result>
             <result property="content" column="tcontent"></result>
-            <result property="senderAccomplish" column="tsenderCancle"></result>
-            <result property="receiverAccomplish" column="treceiverCancle"></result>
             <result property="senderid" column="tsenderid"></result>
             <result property="receiverid" column="treceiverid"></result>
-            <result property="publishTime" column="tpublishTime"></result>
-            <association property="taskType" javaType="edu.fzu.qujing.bean.Tasktype">
-                <id property="id" column="ttid"></id>
-                <id property="name" column="ttname"></id>
-            </association>
         </collection>
     </resultMap>
 
@@ -188,9 +169,6 @@
     <update id="updateUser" flushCache="true">
         UPDATE user
         <set>
-            <if test="username != null and username != ''">
-                username = #{username},
-            </if>
             <if test="password != null and password != ''">
                 password = #{password},
             </if>
@@ -203,21 +181,13 @@
             <if test="content != null and content != ''">
                 content = #{content},
             </if>
-            <if test="startTime != null">
-                startTime = #{startTime},
-            </if>
             <if test="endTime != null">
                 endTime = #{endTime},
             </if>
             <if test="receiveTaskNumber != null">
                 receiveTaskNumber = #{receiveTaskNumber},
             </if>
-            <if test="maliciousAcceptanceNumber != null">
-                maliciousAcceptanceNumber = #{maliciousAcceptanceNumber},
-            </if>
-            <if test="reportedNumber != null">
-                reportedNumber = #{reportedNumber},
-            </if>
+            version = version + 1;
         </set>
         <where>
             <choose>
@@ -240,7 +210,7 @@
     </insert>
 
     <select id="getUserToCheck" resultType="edu.fzu.qujing.bean.User">
-        SELECT email,studentId,password,state,endTime
+        SELECT id,email,studentId,password,state,endTime,version
         FROM user
         <where>
             <choose>
@@ -320,13 +290,16 @@
         FROM user
         WHERE studentId = #{studentId}
     </select>
-    <select id="getReceiveTaskNumberByStudentId" resultType="java.lang.Integer">
-        SELECT receiveTaskNumber
+
+    <select id="getNumberOfTasksAccepted" resultType="edu.fzu.qujing.bean.User">
+        SELECT id,receiveTaskNumber,version
         FROM user
         <where>
             studentId = #{studentId}
         </where>
     </select>
+
+
 
 
 </mapper>

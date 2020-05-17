@@ -36,13 +36,12 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
                                         HttpServletResponse response) throws AuthenticationException{
         Subject subject = SecurityUtils.getSubject();
         UsernamePasswordToken token  = new UsernamePasswordToken(username,password);
-        User user = new User();
+        User userToCheck;
         if (username.indexOf("@") == -1) {
-            user.setStudentId(username);
+            userToCheck = userService.getUserToCheckByStudentId(username);
         }else {
-            user.setEmail(username);
+            userToCheck = userService.getUserToCheckByEmail(username);
         }
-        User userToCheck = userService.getUserToCheck(user);
         try {
             subject.login(token);
         }catch (UnknownAccountException e) {
@@ -81,7 +80,7 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
      */
     @Override
     public void register(User user) {
-        Integer id = userService.saveUser(user);
+        Integer id = userService.save(user);
         ByteSource credentialsSalt = ByteSource.Util.bytes(id.toString());
         String encode = new SimpleHash("MD5",id.toString(),credentialsSalt,1024).toBase64();
         MailUtil.sendToNoSSL(user.getEmail(),id,user.getUsername(),encode);

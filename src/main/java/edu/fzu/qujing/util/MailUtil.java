@@ -17,9 +17,9 @@ import java.util.Properties;
 @Component
 public class MailUtil {
 
-    private static String myEmailSMTPHost = "smtp.163.com";
-    private static String myEmailAccount = "18030389136@163.com";
-    private static String myEmailPassword = "HPGRPDOQKZAMRLLC";
+    private static final String myEmailSMTPHost = "smtp.163.com";
+    private static final String myEmailAccount = "18030389136@163.com";
+    private static final String myEmailPassword = "HPGRPDOQKZAMRLLC";
     private static Properties properties;
     private static String receiveMailAccount;
 

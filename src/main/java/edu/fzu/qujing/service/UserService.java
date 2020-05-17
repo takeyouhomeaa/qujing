@@ -13,22 +13,17 @@ public interface UserService {
      *
      * @param user 存有user数据
      */
-    public Integer saveUser(User user);
+    public Integer save(User user);
 
-
-    /**
-     * 对用户信息进行修改
-     *
-     * @param user 修改的用户信息
-     */
-    public void updateUser(User user);
 
     /**
      * 对用户的接受任务数进行修改
      *
      * @param studentId 学号
+     * @param count   任务数
+     * @return
      */
-    public void updateReceiveTaskNumber(String studentId, int count);
+    Integer updateReceiveTaskNumber(String studentId, int count);
 
     /**
      * 获得用户已接受的任务数
@@ -36,8 +31,32 @@ public interface UserService {
      * @param studentId 学号
      * @return 用户接受的任务数
      */
-    public Integer getUserReceiveTaskNumber(String studentId);
+    Integer getReceiveTaskNumber(String studentId);
 
 
-    public User getUserToCheck(User user);
+    /**
+     * 通过学号查询用于认证的用户信息
+     *
+     * @param studentId
+     * @return
+     */
+    User getUserToCheckByStudentId(String studentId);
+
+    /**
+     * 通过邮箱查询用于认证的用户信息
+     *
+     * @param email
+     * @return
+     */
+    User getUserToCheckByEmail(String email);
+
+
+    /**
+     * 修改用户账户状态
+     *
+     * @param studentId
+     * @param state
+     * @return
+     */
+    User updateState(String studentId,Integer state);
 }

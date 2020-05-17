@@ -9,12 +9,19 @@ import edu.fzu.qujing.bean.Type;
 import edu.fzu.qujing.bean.User;
 import edu.fzu.qujing.mapper.TaskMapper;
 import edu.fzu.qujing.mapper.UserMapper;
+import edu.fzu.qujing.service.TaskService;
+import edu.fzu.qujing.service.UserService;
 import edu.fzu.qujing.util.RedisUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import springfox.documentation.spring.web.json.Json;
+
+import java.util.Date;
+import java.util.List;
 
 @SpringBootTest
 class QujingApplicationTests {
@@ -25,18 +32,24 @@ class QujingApplicationTests {
     @Autowired
     TaskMapper taskMapper;
 
+    @Autowired
+    UserService userService;
+
+    @Autowired
+    TaskService taskService;
+
     @Test
-    void contextLoads() throws JsonProcessingException {
-        RedisUtil redisUtil = new RedisUtil();
-//        System.out.println(redisUtil.sGet("test"));
-        ObjectMapper objectMapper = new ObjectMapper();
-//        System.out.println(redisUtil.get("test2"));
-        ObjectMapper om = new ObjectMapper();
-        System.out.println(om.writeValueAsString("test"));
+    public void contextLoads() throws JsonProcessingException {
+        User user = new User();
+        user.setStudentId("221701206");
+        user.setEmail("root");
+        user.setPassword("asd");
+        userService.save(user);
+    }
 
-        redisUtil.set("hhh","aaa");
-        System.out.println(redisUtil.get("hhh"));
-
+    @CachePut(cacheNames = "te",key = "tt1")
+    public Task taskList(Task task) {
+        return taskMapper.selectById(10101);
 
     }
 

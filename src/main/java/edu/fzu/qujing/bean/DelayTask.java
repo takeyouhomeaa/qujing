@@ -47,6 +47,6 @@ public class DelayTask implements Delayed {
 
     @Override
     public int compareTo(Delayed delayed) {
-        return (int) (this.getDelay(TimeUnit.MILLISECONDS) - delayed.getDelay(TimeUnit.MILLISECONDS));
+        return (int) (this.getDelay(TimeUnit.NANOSECONDS) - delayed.getDelay(TimeUnit.NANOSECONDS));
     }
 }

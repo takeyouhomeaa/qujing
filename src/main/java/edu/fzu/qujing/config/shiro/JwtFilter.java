@@ -9,6 +9,9 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.authc.BasicHttpAuthenticationFilter;
+import org.apache.shiro.web.util.WebUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -17,6 +20,29 @@ import javax.servlet.http.HttpServletResponse;
 
 @Slf4j
 public class JwtFilter extends BasicHttpAuthenticationFilter {
+
+
+    @Override
+    protected boolean preHandle(ServletRequest request, ServletResponse response) throws Exception {
+        HttpServletRequest httpServletRequest = WebUtils.toHttp(request);
+        HttpServletResponse httpServletResponse = WebUtils.toHttp(response);
+        // 跨域时会首先发送一个option请求，这里我们给option请求直接返回正常状态
+        if (httpServletRequest.getMethod().equals(RequestMethod.OPTIONS.name())) {
+            httpServletResponse.setStatus(HttpStatus.OK.value());
+            return false;
+        }
+        return super.preHandle(request, response);
+    }
+
+    /**
+     * 后置处理
+     */
+    @Override
+    protected void postHandle(ServletRequest request, ServletResponse response) {
+        // 添加跨域支持
+        this.fillCorsHeader(WebUtils.toHttp(request), WebUtils.toHttp(response));
+    }
+
 
     /**
      * 过滤器拦截请求的入口方法
@@ -28,7 +54,7 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
      */
     @Override
     protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) {
-        if(isLoginAttempt(request,response)) {
+        if(!isLoginAttempt(request,response)) {
             return false;
         }
         boolean allowed = false;
@@ -39,12 +65,12 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
         } catch (Exception e) {
             log.error("Error occurs when login", e);
         }
-        return allowed || super.isPermissive(mappedValue);
+        return allowed;
     }
 
     @Override
     protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {
-        HttpServletResponse httpServletResponse= (HttpServletResponse)request;
+        HttpServletResponse httpServletResponse= (HttpServletResponse)response;
         httpServletResponse.setContentType("application/json;charset=UTF-8");
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("code","401");
@@ -63,7 +89,11 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
     @Override
     protected boolean isLoginAttempt(ServletRequest request, ServletResponse response) {
         HttpServletRequest httpServletRequest = (HttpServletRequest)request;
-        return httpServletRequest.getAttribute(JwtUtil.AUTH_HEADER) == null;
+        Object attribute = httpServletRequest.getHeader(JwtUtil.AUTH_HEADER);
+        if(attribute == null){
+            return false;
+        }
+        return  true;
     }
 
     /**
@@ -75,7 +105,7 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
     @Override
     protected AuthenticationToken createToken(ServletRequest request, ServletResponse response) {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-        String authorization = (String) httpServletRequest.getAttribute(JwtUtil.AUTH_HEADER);
+        String authorization = (String) httpServletRequest.getHeader(JwtUtil.AUTH_HEADER);
         JwtToken token = new JwtToken(authorization);
         return token;
     }
@@ -121,10 +151,12 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
         String newToken = null;
         if(token instanceof JwtToken){
             newToken = JwtUtil.creatJwt(JwtUtil.JWT_ID,token.getCredentials().toString(),JwtUtil.JWT_EXPIRE);
+            log.info("创建新的jwtToken");
         }
         if (newToken != null) {
             httpServletResponse.setCharacterEncoding("UTF-8");
             httpServletResponse.setHeader(JwtUtil.AUTH_HEADER, newToken);
+            log.info("jwtToken被写入header");
         }
         return true;
     }
@@ -141,4 +173,12 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
     protected boolean onLoginFailure(AuthenticationToken token, AuthenticationException e, ServletRequest request, ServletResponse response) {
         return super.onLoginFailure(token, e, request, response);
     }
+
+    protected void fillCorsHeader(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
+        httpServletResponse.setHeader("Access-control-Allow-Origin", httpServletRequest.getHeader("Origin"));
+        httpServletResponse.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS,HEAD");
+        httpServletResponse.setHeader("Access-Control-Allow-Headers",
+                httpServletRequest.getHeader("Access-Control-Request-Headers"));
+    }
+
 }

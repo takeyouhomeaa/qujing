@@ -17,10 +17,10 @@ public class JwtCredentialsMatcher implements CredentialsMatcher {
         try {
             Claims claims = JwtUtil.parseJwt(token);
             String subject = claims.getSubject();
-            if (studentId.equals(subject)) {
+            if (!studentId.equals(subject)) {
                 throw new AuthenticationException("Unauthorized");
             }
-            if (!JwtUtil.isTokenExpired(claims.getExpiration())) {
+            if (JwtUtil.isTokenExpired(claims.getExpiration())) {
                 throw new AuthenticationException("Authentication expired, please login again");
             }
             return true;

@@ -7,9 +7,14 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+
+import javax.annotation.Resource;
 
 public class JwtRealm extends AuthorizingRealm {
-    @Autowired
+
+    @Lazy
+    @Resource
     UserService userService;
     
     @Override
@@ -25,9 +30,7 @@ public class JwtRealm extends AuthorizingRealm {
         }
 
         String username = jwtToken.getPrincipal().toString();
-        User user = new User();
-        user.setStudentId(username);
-        User userToCheck = userService.getUserToCheck(user);
+        User userToCheck = userService.getUserToCheckByStudentId(username);
         if(userToCheck == null) {
             throw new UnknownAccountException("User does not exist");
         }

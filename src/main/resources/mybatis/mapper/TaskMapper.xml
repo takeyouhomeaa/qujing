@@ -11,58 +11,40 @@
         WHERE senderid = #{studentId}
     </select>
 
-    <update id="updateTask" flushCache="true">
-        UPDATE task
-        <set>
-            <if test="name != null and name != ''">
-                name = #{name},
-            </if>
-            <if test="points != null">
-                points = #{points},
-            </if>
-            <if test="deadline != null">
-                deadline = #{deadline},
-            </if>
-            <if test="expedited != null">
-                expedited = #{expedited},
-            </if>
-            <if test="senderAccomplish != null">
-                senderAccomplish = #{senderAccomplish},
-            </if>
-            <if test="receiverAccomplish != null">
-                receiverAccomplish = #{receiverAccomplish},
-            </if>
-            <if test="content != null and content != ''">
-                content = #{content},
-            </if>
-            <if test="taskType != null and taskType.id != null">
-                ttid = #{taskType.id},
-            </if>
-            <if test="senderCancle != null">
-                senderCancle = #{senderCancle},
-            </if>
-            <if test="receiverCancle != null">
-                receiverCancle = #{receiverCancle},
-            </if>
-            <if test="senderid != null and senderid != ''">
-                senderid = #{senderid},
-            </if>
-            <if test="receiverid != null and receiverid != ''">
-                receiverid = #{receiverid},
-            </if>
-            <if test="publishTime != null">
-                publishTime = #{publishTime}
-            </if>
-        </set>
-        <where>
-            id = #{id}
-        </where>
-    </update>
 
     <select id="getCountByReceiverId" resultType="java.lang.Integer">
         SELECT COUNT(*)
         FROM task
         WHERE receiverid = #{studentId}
     </select>
+
+    <select id="listSimpleTask" resultType="edu.fzu.qujing.bean.Task">
+        SELECT
+        id,
+        name,
+        points,
+        deadline,
+        expedited
+        FROM task
+        WHERE state = #{state}
+        ORDER BY expedited DESC,deadline
+    </select>
+
+    <select id="getTaskById" resultType="edu.fzu.qujing.bean.Task">
+        SELECT
+        id,
+        name,
+        points,
+        deadline,
+        state,
+        content,
+        ttid,
+        senderid
+        FROM task
+        <where>
+            id = #{id}
+        </where>
+    </select>
+
 
 </mapper>

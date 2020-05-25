@@ -26,7 +26,9 @@
         deadline,
         expedited
         FROM task
-        WHERE state = #{state}
+        <where>
+             state = #{state}
+        </where>
         ORDER BY expedited DESC,deadline
     </select>
 
@@ -46,5 +48,25 @@
         </where>
     </select>
 
+
+    <select id="listTaskByStudentId" resultType="edu.fzu.qujing.bean.Task">
+        SELECT
+        id,
+        name,
+        points,
+        deadline,
+        expedited
+        FROM task
+        <where>
+            <choose>
+                <when test="senderid != null and senderid != ''">
+                    AND senderid = #{senderid}
+                </when>
+                <when test="receiverid != null and receiverid != ''">
+                    AND receiverid = #{receiverid}
+                </when>
+            </choose>
+        </where>
+    </select>
 
 </mapper>

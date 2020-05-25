@@ -80,7 +80,7 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
      */
     @Override
     public void register(User user) {
-        Integer id = userService.save(user);
+        Integer id = userService.saveUser(user);
         ByteSource credentialsSalt = ByteSource.Util.bytes(id.toString());
         String encode = new SimpleHash("MD5",id.toString(),credentialsSalt,1024).toBase64();
         MailUtil.sendToNoSSL(user.getEmail(),id,user.getUsername(),encode);

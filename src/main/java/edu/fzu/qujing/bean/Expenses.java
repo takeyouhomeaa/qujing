@@ -1,100 +1,47 @@
 package edu.fzu.qujing.bean;
 
+import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+
 /**
- * @version 1.1
- * 1.1：
- * 把邮箱关联用户改为用户ID
+ * @author
  */
-public class Expenses {
-    //消费记录的ID，自增
-    public Integer id;
-    //消费金额
-    public Integer amount;
-    //消费时间
+@Data
+@TableName(value = "expensesrecord")
+@ApiModel(description = "消费记录")
+public class Expenses implements Serializable {
+
+    @TableId(type = IdType.AUTO)
+    @ApiModelProperty("消费记录的ID，自增")
+    private Integer id;
+
+    @ApiModelProperty("消费金额")
+    private Integer amount;
+
+    @ApiModelProperty("消费者Id")
+    private String userId;
+
+    @ApiModelProperty("消费类型，1：发布任务，2：提现，3：惩罚")
+    private Integer type;
+
+    @TableField(fill = FieldFill.INSERT)
+    @ApiModelProperty("创建时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    public Date time;
-    //消费者Id
-    public String userId;
-    //消费类型，1：发布任务，2：提现，3：惩罚
-    public Type type;
-    //消费类型列表
-    public List<Type> typeList;
+    private Date time;
 
-    //无参构造器
-    public Expenses() {
-    }
+    @Version
+    @ApiModelProperty("版本号")
+    private Integer version;
 
-    //包含无裂变字段的构造器
-    public Expenses(Integer id, Integer amount, Date time, String userId, Type type) {
-        this.id = id;
-        this.amount = amount;
-        this.time = time;
-        this.userId = userId;
-        this.type = type;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public Integer getAmount() {
-        return amount;
-    }
-
-    public void setAmount(Integer amount) {
-        this.amount = amount;
-    }
-
-    public Date getTime() {
-        return time;
-    }
-
-    public void setTime(Date time) {
-        this.time = time;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public Type getType() {
-        return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
-    }
-
-    public List<Type> getTypeList() {
-        return typeList;
-    }
-
-    public void setTypeList(List<Type> typeList) {
-        this.typeList = typeList;
-    }
-
-    @Override
-    public String toString() {
-        return "Expenses{" +
-                "id=" + id +
-                ", amount=" + amount +
-                ", time=" + time +
-                ", userId=" + userId +
-                ", type=" + type +
-                ", typeList=" + typeList +
-                '}';
-    }
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    @ApiModelProperty("修改时间")
+    private Date updateTime;
 }

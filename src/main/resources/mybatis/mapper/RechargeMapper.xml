@@ -22,14 +22,8 @@
         SELECT id, amount,time,userId
         FROM rechargerecord
         <where>
-            <if test="recharge.userId != null and recharge.userId != ''">
-                userId = #{recharge.userId}
-            </if>
-            <if test="time != null and time != ''">
-                AND DATE_FORMAT(time,'%Y-%m-%d') = #{time}
-            </if>
+            userId = #{userId}
         </where>
         ORDER BY id DESC
-        LIMIT #{pos},#{pages}
     </select>
 </mapper>

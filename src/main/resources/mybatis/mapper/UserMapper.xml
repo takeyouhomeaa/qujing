@@ -34,32 +34,32 @@
         <id property="id" column="uid"></id>
         <result property="email" column="uemail"></result>
         <result property="studentId" column="ustudentId"></result>
-        <collection property="acceptTask" ofType="edu.fzu.qujing.bean.Task">
-            <id property="id" column="tid"></id>
-            <result property="name" column="tname"></result>
-            <result property="points" column="tpoints"></result>
-            <result property="deadline" column="tdeadline"></result>
-            <result property="expedited" column="texpedited"></result>
-            <result property="content" column="tcontent"></result>
-            <result property="senderid" column="tsenderid"></result>
-            <result property="receiverid" column="treceiverid"></result>
-        </collection>
+<!--        <collection property="acceptTask" ofType="edu.fzu.qujing.bean.Task">-->
+<!--            <id property="id" column="tid"></id>-->
+<!--            <result property="name" column="tname"></result>-->
+<!--            <result property="points" column="tpoints"></result>-->
+<!--            <result property="deadline" column="tdeadline"></result>-->
+<!--            <result property="expedited" column="texpedited"></result>-->
+<!--            <result property="content" column="tcontent"></result>-->
+<!--            <result property="senderid" column="tsenderid"></result>-->
+<!--            <result property="receiverid" column="treceiverid"></result>-->
+<!--        </collection>-->
     </resultMap>
 
     <resultMap id="taskRs2" type="edu.fzu.qujing.bean.User">
         <id property="id" column="uid"></id>
         <result property="email" column="uemail"></result>
         <result property="studentId" column="ustudentId"></result>
-        <collection property="publishTask" ofType="edu.fzu.qujing.bean.Task">
-            <id property="id" column="tid"></id>
-            <result property="name" column="tname"></result>
-            <result property="points" column="tpoints"></result>
-            <result property="deadline" column="tdeadline"></result>
-            <result property="expedited" column="texpedited"></result>
-            <result property="content" column="tcontent"></result>
-            <result property="senderid" column="tsenderid"></result>
-            <result property="receiverid" column="treceiverid"></result>
-        </collection>
+<!--        <collection property="publishTask" ofType="edu.fzu.qujing.bean.Task">-->
+<!--            <id property="id" column="tid"></id>-->
+<!--            <result property="name" column="tname"></result>-->
+<!--            <result property="points" column="tpoints"></result>-->
+<!--            <result property="deadline" column="tdeadline"></result>-->
+<!--            <result property="expedited" column="texpedited"></result>-->
+<!--            <result property="content" column="tcontent"></result>-->
+<!--            <result property="senderid" column="tsenderid"></result>-->
+<!--            <result property="receiverid" column="treceiverid"></result>-->
+<!--        </collection>-->
     </resultMap>
 
     <select id="listAcceptTask" resultMap="taskRs1">
@@ -285,8 +285,8 @@
         </where>
     </select>
 
-    <select id="getPointsByStudentId" resultType="java.lang.Integer">
-        SELECT points
+    <select id="getUserPoints" resultType="edu.fzu.qujing.bean.User">
+        SELECT id,points,version
         FROM user
         WHERE studentId = #{studentId}
     </select>

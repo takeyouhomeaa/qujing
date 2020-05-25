@@ -18,40 +18,19 @@
         VALUES (#{amount},#{time},#{userId},#{type.id})
     </insert>
 
-    <resultMap id="expenses" type="edu.fzu.qujing.bean.Expenses">
-        <id property="id" column="erid"></id>
-        <result property="amount" column="eramount"></result>
-        <result property="time" column="ertime"></result>
-        <result property="userId" column="eruserId"></result>
-        <association property="type" javaType="edu.fzu.qujing.bean.Type">
-            <id property="id" column="etid"></id>
-            <result property="name" column="etname"></result>
-        </association>
-    </resultMap>
 
-    <select id="listExpense" resultMap="expenses">
-        SELECT er.id erid,
+    <select id="listExpense" resultType="edu.fzu.qujing.bean.Expenses">
+        SELECT
+        er.id erid,
         er.amount eramount,
         er.time ertime,
         er.userId eruserId,
-        er.type ertype,
-        et.id etid,
-        et.name etname
+        er.type ertype
         FROM expensesrecord er
-        INNER JOIN consumptiontype et ON er.type = et.id
         <where>
-            <if test="expenses.userId != null and expenses.userId != ''">
-                er.userId = #{expenses.userId}
-            </if>
-            <if test="time != null and time != ''">
-                AND DATE_FORMAT(er.time,'%Y-%m-%d') = #{time}
-            </if>
-            <if test="expenses.type.id != null">
-                AND er.type = #{expenses.type.id}
-            </if>
+            er.userId = #{userId}
         </where>
         ORDER BY er.id DESC
-        LIMIT #{pos},#{pages}
     </select>
 
 

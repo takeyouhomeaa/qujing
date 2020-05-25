@@ -6,14 +6,40 @@ import io.swagger.models.auth.In;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public interface TaskService {
+
+
     /**
      * 查询未有人接受的任务
+     * @param pos
      * @return
      */
-    List<Task> listUnacceptedTask(Integer pos,Integer count);
+    List<Task> listUnacceptedTask(Integer pos);
+
+    /**
+     * 按照学号查找已接受的任务
+     *
+     * @param studentId
+     * @param pos
+     * @return
+     */
+    List<Task> listAccept(String studentId, String pos);
+
+
+
+    /**
+     * 按照学号查找已发布的任务
+     *
+     * @param studentId
+     * @param pos
+     * @return
+     */
+    List<Task> listPublish(String studentId,String pos);
+
+
 
     /**
      * 根据任务id查找任务详细信息
@@ -24,23 +50,26 @@ public interface TaskService {
 
     /**
      * 发布任务
-     * @param task
+     * @param map
      * @return
      */
-    void postTask(Task task);
+    Task postTask(Map<String,String> map);
 
     /**
      * 修改任务的状态
      * @param id
      * @param state
+     * @return
      */
-    void updateState(Integer id,Integer state);
+    Task updateState(Integer id,Integer state);
 
     /**
      * 接受任务
      * @param id
+     * @param studentId
+     * @return
      */
-    void acceptTask(Integer id);
+    Task acceptTask(Integer id,String studentId);
 
 
 
@@ -48,36 +77,44 @@ public interface TaskService {
      * 雇主取消任务
      *
      * @param id 任务ID
+     * @param studentId
      * @param content 理由
      * @param type 取消类型
+     * @return
      */
-    public void cancelTaskToEmployer(Integer id, String content, String type);
+    public Task cancelTaskToEmployer(Integer id,String studentId ,String content, String type);
 
 
     /**
      * 雇员取消任务
      *
      * @param id 任务ID
+     * @param studentId
      * @param content 理由
      * @param type 取消类型
+     * @return
      */
-    public void cancelTaskToEmployee(Integer id, String content, String type);
+    public Task cancelTaskToEmployee(Integer id, String studentId ,String content, String type);
 
 
     /**
      * 雇员完成任务
      *
      * @param id 任务ID
+     * @param studentId
+     * @return
      */
-    public void completeTaskToEmployee(Integer id);
+    public Task completeTaskToEmployee(Integer id,String studentId);
 
 
     /**
      * 雇主确认完成任务
      *
      * @param id 任务ID
+     * @param studentId
+     * @return
      */
-    public void confirmTaskToEmployer(Integer id);
+    public Task confirmTaskToEmployer(Integer id,String studentId);
 
 
     /**

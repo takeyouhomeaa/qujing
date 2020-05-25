@@ -19,6 +19,7 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
+import java.util.Random;
 
 @Configuration
 public class RedisConfig {
@@ -57,20 +58,13 @@ public class RedisConfig {
         om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
         om.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.NON_FINAL);
         jsonRedisSerializer.setObjectMapper(om);
-
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofDays(1))
+                .entryTtl(Duration.ofHours(new Random().nextInt(24) + 1))
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(redisSerializer))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jsonRedisSerializer))
                 .disableCachingNullValues();
 
-        RedisCacheManager cacheManager = RedisCacheManager.builder(factory)
-                .cacheDefaults(config)
-                .build();
-        return cacheManager;
+        return new CustomerRedisCacheManager(factory,config);
     }
 
-    public KeyGenerator keyGenerator(){
-        return new RedisCacheKeyGenerator();
-    }
 }

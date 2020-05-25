@@ -1,19 +1,27 @@
 package edu.fzu.qujing.service;
 
+import com.baomidou.mybatisplus.extension.service.IService;
 import edu.fzu.qujing.bean.User;
 import org.springframework.stereotype.Service;
 
 import javax.naming.AuthenticationException;
 
 @Service
-public interface UserService {
+public interface UserService  {
 
     /**
      * 保存对密码加密后的user数据
      *
      * @param user 存有user数据
      */
-    public Integer save(User user);
+    public User save(User user);
+
+    /**
+     * 保存用户
+     * @param user
+     * @return
+     */
+    Integer saveUser(User user);
 
 
     /**
@@ -23,7 +31,7 @@ public interface UserService {
      * @param count   任务数
      * @return
      */
-    Integer updateReceiveTaskNumber(String studentId, int count);
+    User updateReceiveTaskNumber(String studentId, int count);
 
     /**
      * 获得用户已接受的任务数
@@ -31,7 +39,7 @@ public interface UserService {
      * @param studentId 学号
      * @return 用户接受的任务数
      */
-    Integer getReceiveTaskNumber(String studentId);
+    User getReceiveTaskNumber(String studentId);
 
 
     /**
@@ -59,4 +67,21 @@ public interface UserService {
      * @return
      */
     User updateState(String studentId,Integer state);
+
+
+    /**
+     * 修改用户的积分
+     * @param user
+     * @return
+     */
+    User updatePoints(User user);
+
+
+    /**
+     * 获取用户所有的积分
+     * @param studentId
+     * @return
+     */
+    User getUserPoints(String studentId);
+
 }

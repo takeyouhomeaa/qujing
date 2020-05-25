@@ -1,12 +1,15 @@
 package edu.fzu.qujing.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import edu.fzu.qujing.bean.Expenses;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
 
-public interface ExpensesMapper {
+public interface ExpensesMapper extends BaseMapper<Expenses> {
     /**
      * 查询数据条数
      *
@@ -26,11 +29,9 @@ public interface ExpensesMapper {
     /**
      * 按条件查询消费记录
      *
-     * @param expenses 存储查询条件
+     * @param studentId
+     * @param page
      * @return 消费记录列表
      */
-    public List<Expenses> listExpense(@Param("expenses") Expenses expenses,
-                                      @Param("pos") Integer pos,
-                                      @Param("time") String time,
-                                      @Param("pages") Integer pages);
+    IPage<Expenses> listExpense(@Param("userId") String studentId, @Param("page") Page<Expenses> page);
 }

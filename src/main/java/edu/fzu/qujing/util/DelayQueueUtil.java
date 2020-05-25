@@ -14,7 +14,11 @@ public class DelayQueueUtil {
         return delayQueueToCancel;
     }
 
-    public static void removeDelayTaskToCancel(DelayTask delayTask) {
+    public static DelayQueue<DelayTask> getDelayQueueToConfirm() {
+        return delayQueueToConfirm;
+    }
+
+    private static void remove(DelayTask delayTask, DelayQueue<DelayTask> delayQueueToCancel) {
         if (delayTask != null && delayTask.getId() != null) {
             for (Iterator<DelayTask> iterator = delayQueueToCancel.iterator(); iterator.hasNext(); ) {
                 DelayTask temp = (DelayTask) iterator.next();
@@ -25,15 +29,13 @@ public class DelayQueueUtil {
         }
     }
 
+
+    public static void removeDelayTaskToCancel(DelayTask delayTask) {
+        remove(delayTask, delayQueueToCancel);
+    }
+
     public static void removeDelayTaskToConfirm(DelayTask delayTask) {
-        if (delayTask != null && delayTask.getId() != null) {
-            for (Iterator<DelayTask> iterator = delayQueueToConfirm.iterator(); iterator.hasNext(); ) {
-                DelayTask temp = (DelayTask) iterator.next();
-                if (temp.getId().equals(delayTask.getId())) {
-                    delayQueueToConfirm.remove(temp);
-                }
-            }
-        }
+        remove(delayTask, delayQueueToConfirm);
     }
 
     public static void addDelayTaskToCancel(DelayTask delayTask) {

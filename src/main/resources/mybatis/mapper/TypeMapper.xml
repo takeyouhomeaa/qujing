@@ -9,30 +9,27 @@
         SELECT id,name
         FROM userState
     </select>
+
     <select id="listTaskType" resultType="edu.fzu.qujing.bean.Type">
-         SELECT id,name
-        FROM taskType
+        SELECT id,name
+        FROM tasktype
     </select>
 
-    <select id="listNextTaskType" resultType="edu.fzu.qujing.bean.Type">
-        <if test="taskTypeId == 1">
-            SELECT id,name
-            FROM expressageType
-        </if>
-        <if test="taskTypeId == 2 ">
-            SELECT id,name
-            FROM thingsTpye
-        </if>
-        <if test="taskTypeId == 3">
-            SELECT id,name
-            FROM thingsTpye
-        </if>
-        <if test="taskTypeId == 4">
-            SELECT id,name
-            FROM diningType
-        </if>
-        <if test="taskTypeId == 5"></if>
-        <if test="taskTypeId == 6"></if>
+    <select id="listTaskState" resultType="edu.fzu.qujing.bean.Type">
+        SELECT id,name
+        FROM taskstate
+    </select>
+
+    <select id="getTakeState" resultType="edu.fzu.qujing.bean.Type">
+        SELECT id,name
+        FROM taskstate
+        WHERE id = #{id}
+    </select>
+
+    <select id="getTaskType" resultType="edu.fzu.qujing.bean.Type">
+        SELECT id,name
+        FROM tasktype
+        WHERE id = #{id}
     </select>
 
 

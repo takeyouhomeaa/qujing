@@ -1,12 +1,10 @@
-package edu.fzu.qujing.bean.controller;
+package edu.fzu.qujing.controller;
 
 import edu.fzu.qujing.bean.User;
 import edu.fzu.qujing.service.AuthenticatedService;
-import edu.fzu.qujing.service.UserService;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.naming.AuthenticationException;
@@ -19,7 +17,7 @@ import java.util.Map;
 public class AuthenticatedController {
 
     @Autowired
-    AuthenticatedService authenticatedService;
+    private AuthenticatedService authenticatedService;
 
     /**
      * @param map

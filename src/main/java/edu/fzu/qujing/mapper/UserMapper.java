@@ -28,6 +28,11 @@ public interface UserMapper extends BaseMapper<User> {
      */
     User getNumberOfTasksAccepted(String studentId);
 
-
+    /**
+     * 获得用户积分
+     * @param studentId
+     * @return
+     */
+    User getUserPoints(String studentId);
 
 }

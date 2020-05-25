@@ -36,18 +36,28 @@ public class UserServiceImpl implements UserService {
     @Override
     @Caching(
             put = {
-                    @CachePut(key = "#user.studentId + '_check'"),
-                    @CachePut(key = "#user.email + '_check'")}
+                    @CachePut(key = "'getUserToCheckByStudentId(' + #user.studentId + ')'"),
+                    @CachePut(key = "'getUserToCheckByEmail(' + #user.email + ')'")}
     )
-    public Integer save(User user) {
+    public User save(User user) {
         ByteSource credentialsSalt = ByteSource.Util.bytes(user.getStudentId());
         String pwd = new SimpleHash("MD5",user.getPassword(),
                 credentialsSalt,1024).toBase64();
         user.setPassword(pwd);
         userMapper.insert(user);
-        return user.getId();
+        return user;
     }
 
+    /**
+     * 保存用户
+     *
+     * @param user
+     * @return
+     */
+    @Override
+    public Integer saveUser(User user) {
+        return save(user).getId();
+    }
 
     /**
      * 对用户的接受任务数进行修改
@@ -57,14 +67,14 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Caching(
-            cacheable = {@Cacheable(key = "#studentId + '_ReceiveTaskNumbe'")},
-            put = {@CachePut(key = "#studentId + '_ReceiveTaskNumbe'")}
+            cacheable = {@Cacheable(key = "'getNumberOfTasksAccepted' + '(' + #studentId + ')'")},
+            put = {@CachePut(key = "'getNumberOfTasksAccepted' + '(' + #studentId + ')'")}
     )
-    public Integer updateReceiveTaskNumber(String studentId, int count) {
+    public User updateReceiveTaskNumber(String studentId, int count) {
         User user = userMapper.getNumberOfTasksAccepted(studentId);
         user.setReceiveTaskNumber(user.getReceiveTaskNumber() + count);
         userMapper.updateById(user);
-        return user.getReceiveTaskNumber();
+        return user;
     }
 
     /**
@@ -74,15 +84,15 @@ public class UserServiceImpl implements UserService {
      * @return 用户接受的任务数
      */
     @Override
-    @Cacheable(key = "#studentId + '_ReceiveTaskNumbe'")
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
-    public Integer getReceiveTaskNumber(String studentId) {
+    public User getReceiveTaskNumber(String studentId) {
         User user = userMapper.getNumberOfTasksAccepted(studentId);
-        return user.getReceiveTaskNumber();
+        return user;
     }
 
     @Override
-    @Cacheable(key = "#studentId + '_check'")
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
     public User getUserToCheckByStudentId(String studentId) {
         User user = new User();
@@ -97,7 +107,7 @@ public class UserServiceImpl implements UserService {
      * @return
      */
     @Override
-    @Cacheable(key = "#email + '_check'")
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
     public User getUserToCheckByEmail(String email) {
         User user = new User();
@@ -116,14 +126,41 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Caching(
-            cacheable = {@Cacheable(key = "#studentId + '_check'")},
-            put = {@CachePut(key = "#studentId + '_check'")}
+            cacheable = {
+                    @Cacheable(key = "'getUserToCheckByStudentId(' + #studentId + ')'")
+            },
+            put = {
+                    @CachePut(key = "'getUserToCheckByStudentId(' + #studentId + ')'")
+            }
     )
     public User updateState(String studentId,Integer state) {
-        User user = new User();
-        user.setStudentId(studentId);
-        User userToCheck = userMapper.getUserToCheck(user);
+        User userToCheck = getUserToCheckByStudentId(studentId);
         userMapper.updateById(userToCheck);
        return userToCheck;
+    }
+
+    /**
+     * 修改用户的积分
+     *
+     * @param user
+     * @return
+     */
+    @Override
+    @CachePut(key = "'getUserPoints(' + #user.studentId +')'")
+    public User updatePoints(User user) {
+        userMapper.updateById(user);
+        return user;
+    }
+
+    /**
+     * 获取用户所有的积分
+     *
+     * @param studentId
+     * @return
+     */
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'")
+    @Override
+    public User getUserPoints(String studentId) {
+        return userMapper.getUserPoints(studentId);
     }
 }

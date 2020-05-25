@@ -26,6 +26,7 @@ public class RedisUtil {
     }
 
     /**
+     * 设置过期时间
      * @param key  键
      * @param time 时间(秒)
      * @return
@@ -73,6 +74,10 @@ public class RedisUtil {
         return false;
     }
 
+    /**
+     * 删除
+     * @param key
+     */
     public static void del(String... key) {
         if(key != null && key.length > 0) {
             if(key.length == 1) {

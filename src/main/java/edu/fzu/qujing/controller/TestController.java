@@ -1,7 +1,6 @@
-package edu.fzu.qujing.bean.controller;
+package edu.fzu.qujing.controller;
 
 import edu.fzu.qujing.bean.Task;
-import edu.fzu.qujing.mapper.TaskMapper;
 import edu.fzu.qujing.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -6,37 +6,48 @@ import edu.fzu.qujing.bean.DelayTask;
 import edu.fzu.qujing.bean.Task;
 import edu.fzu.qujing.bean.User;
 import edu.fzu.qujing.mapper.TaskMapper;
+import edu.fzu.qujing.service.CancelTaskService;
 import edu.fzu.qujing.service.TaskService;
 import edu.fzu.qujing.util.DelayQueueUtil;
+import edu.fzu.qujing.util.PageUtil;
+import edu.fzu.qujing.util.RedisUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
+@CacheConfig(cacheNames = "task")
 @Transactional(rollbackFor = Exception.class)
 public class TaskServiceImpl implements TaskService {
 
     @Autowired
     TaskMapper taskMapper;
+
+    @Autowired
+    CancelTaskService cancelTaskService;
+
     /**
      * 查询未有人接受的任务
      *
      * @param pos
-     * @param count
      * @return
      */
     @Override
-    @Cacheable(cacheNames = "task",key = "#root.args")
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
-    public List<Task> listUnacceptedTask(Integer pos, Integer count) {
-        Page<Task> page = new Page<>(pos,count);
+    public List<Task> listUnacceptedTask(Integer pos) {
+        Page<Task> page = new Page<>(pos, PageUtil.PAGES);
         IPage<Task> taskIPage = taskMapper.listSimpleTask(page, 1);
+        Map<String,Object> rs = new HashMap<>(2);
         return taskIPage.getRecords();
     }
 
@@ -47,7 +58,7 @@ public class TaskServiceImpl implements TaskService {
      * @return
      */
     @Override
-    @Cacheable(cacheNames = "task",key = "#id")
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')")
     public Task getDetailTask(Integer id) {
         Task task = new Task();
         task.setId(id);
@@ -58,27 +69,67 @@ public class TaskServiceImpl implements TaskService {
     /**
      * 发布任务
      *
-     * @param task
+     * @param map
      * @return
      */
     @Override
-    public void postTask(Task task) {
+    @Caching(
+            put = @CachePut(key = "'getDetailTask(' + #result.id + ')'"),
+            evict = {
+                    @CacheEvict(key = "'listUnacceptedTask(*)'"),
+                    @CacheEvict(key = "'listPublish(*)'"),
+                    @CacheEvict(cacheNames = "user",key = "'getUserPoints(' + #result.senderid + ')'")
+            }
+    )
+    public Task postTask(Map<String,String> map) {
+        Task task = new Task();
+        task.setName(map.get("name"));
+        task.setContent(map.get("content"));
+        task.setState(1);
+        task.setPoints(Integer.valueOf(map.get("content")));
+        task.setSenderid(map.get("studentId"));
+        task.setTtid(Integer.valueOf(map.get("ttid")));
+        Date date = new Date(System.currentTimeMillis() + Long.valueOf(map.get("ttl")));
+        task.setDeadline(date);
         taskMapper.insert(task);
+        Integer id = task.getId();
+        DelayQueueUtil.addDelayTaskToCancel(new DelayTask(id,map.get("studentId"),1000 * 60 * 10));
+        return task;
     }
 
     @Override
-    public void updateState(Integer id,Integer state) {
+    public Task updateState(Integer id,Integer state) {
         Task task = taskMapper.selectById(id);
         task.setState(state);
         taskMapper.updateById(task);
+        return task;
     }
 
 
+    /**
+     * 接受任务
+     *
+     * @param id
+     * @param studentId
+     * @return
+     */
+    @Caching(
+            put = @CachePut(key = "'getDetailTask(' + #id + ')'"),
+            evict = {
+                    @CacheEvict(key = "'listUnacceptedTask(*)'"),
+                    @CacheEvict(key = "'listAccept(*)'")
+            }
+    )
     @Override
-    public void acceptTask(Integer id) {
+    public Task acceptTask(Integer id,String studentId) {
         Task task = taskMapper.selectById(id);
-        task.setState(2);
-        taskMapper.updateById(task);
+        if(task.getState() == 1){
+            task.setState(2);
+            task.setReceiverid(studentId);
+            taskMapper.updateById(task);
+            return task;
+        }
+        return null;
     }
 
 
@@ -90,13 +141,20 @@ public class TaskServiceImpl implements TaskService {
      * @param content 理由
      * @param type    取消类型
      */
+    @Caching(
+            put = @CachePut(key = "'getDetailTask(' + #id + ')'"),
+            evict = {
+                    @CacheEvict(key = "'listAccept( '+ #studentId + ',*)'"),
+                    @CacheEvict(key = "'listPublish( '+ #studentId + ',*)'"),
+                    @CacheEvict(cacheNames = "user",key = "'getUserPoints(' + #studentId + ')'")
+            }
+    )
     @Override
-    public void cancelTaskToEmployer(Integer id, String content, String type) {
-        Task task = taskMapper.selectById(id);
-        task.setState(3);
-        taskMapper.updateById(task);
-        //addCancelTask(id, content, type);
+    public Task cancelTaskToEmployer(Integer id,String studentId ,String content, String type) {
+
+        cancelTaskService.save(id, content, type);
         DelayQueueUtil.removeDelayTaskToCancel(new DelayTask(id));
+        return updateState(id,3);
     }
 
 
@@ -108,12 +166,18 @@ public class TaskServiceImpl implements TaskService {
      * @param content 理由
      * @param type    取消类型
      */
+    @Caching(
+            put = @CachePut(key = "'getDetailTask(' + #id + ')'"),
+            evict = {
+                    @CacheEvict(key = "'listAccept( '+ #studentId + ',*)'"),
+                    @CacheEvict(key = "'listPublish( '+ #studentId + ',*)'"),
+                    @CacheEvict(cacheNames = "user",key = "'getUserPoints(' + #studentId + ')'")
+            }
+    )
     @Override
-    public void cancelTaskToEmployee(Integer id, String content, String type) {
-        Task task = taskMapper.selectById(id);
-        task.setState(4);
-        taskMapper.updateById(task);
-        //addCancelTask(id, content, type);
+    public Task cancelTaskToEmployee(Integer id,String studentId ,String content, String type) {
+        cancelTaskService.save(id, content, type);
+        return updateState(id,4);
     }
 
 
@@ -123,11 +187,17 @@ public class TaskServiceImpl implements TaskService {
      *
      * @param id 任务ID
      */
+    @Caching(
+            put = @CachePut(key = "'getDetailTask(' + #id + ')'"),
+            evict = {
+                    @CacheEvict(key = "'listAccept( '+ #studentId + ',*)'"),
+                    @CacheEvict(key = "'listPublish( '+ #studentId + ',*)'")
+            }
+    )
     @Override
-    public void completeTaskToEmployee(Integer id) {
-        Task task = taskMapper.selectById(id);
-        task.setState(4);
-        taskMapper.updateById(task);
+    public Task completeTaskToEmployee(Integer id,String studentId) {
+        DelayQueueUtil.addDelayTaskToConfirm(new DelayTask(id,studentId ,1000 * 60 * 10));
+        return updateState(id,5);
     }
 
 
@@ -136,9 +206,68 @@ public class TaskServiceImpl implements TaskService {
      *
      * @param id 任务ID
      */
+    @Caching(
+            put = {
+                    @CachePut(key = "'getDetailTask(' + #id + ')'"),
+            },
+            evict = {
+                    @CacheEvict(key = "'listAccept( '+ #studentId + ',*)'"),
+                    @CacheEvict(key = "'listPublish( '+ #studentId + ',*)'"),
+                    @CacheEvict(cacheNames = "user",key = "'getUserPoints(' + #studentId + ')'")
+            }
+    )
     @Override
-    public void confirmTaskToEmployer(Integer id) {
+    public Task confirmTaskToEmployer(Integer id,String studentId) {
+        DelayTask delayTask = new DelayTask();
+        delayTask.setId(id);
+        DelayQueueUtil.removeDelayTaskToConfirm(delayTask);
+        return updateState(id,6);
+    }
 
+
+
+    /**
+     * 按照学号查找已接受的任务
+     *
+     * @param studentId
+     * @param pos
+     * @return
+     */
+    @Override
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')")
+    @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
+    public List<Task> listAccept(String studentId, String pos) {
+        Page<Task> page = new Page<>(Integer.valueOf(pos), PageUtil.PAGES);
+        return taskMapper.listTaskByStudentId(page, null, studentId).getRecords();
+    }
+
+    /**
+     * 按照学号查找已发布的任务
+     *
+     * @param studentId
+     * @param pos
+     * @return
+     */
+    @Override
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'")
+    @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
+    public List<Task> listPublish(String studentId, String pos) {
+        Page<Task> page = new Page<>(Integer.valueOf(pos), PageUtil.PAGES);
+        return taskMapper.listTaskByStudentId(page,  studentId,null).getRecords();
+    }
+
+    public void taskResolve(DelayTask delayTask,Task task){
+        String studentId = delayTask.getStudentId();
+        String key1 = "listAccept(" + studentId + ",*)";
+        String key2 = "listPublish( "+ studentId + ",*)";
+        String key3 = "getDetailTask(" + delayTask.getId() + ")";
+        if(RedisUtil.hasKey(key1)) {
+            RedisUtil.del(key1);
+        }
+        if(RedisUtil.hasKey(key2)) {
+            RedisUtil.del(key2);
+        }
+        RedisUtil.set(key3, task);
     }
 
     /**
@@ -151,10 +280,9 @@ public class TaskServiceImpl implements TaskService {
         Runnable runnable = ()->{
             log.info("taskWasNotTaken 线程启动");
             DelayTask delayTask = DelayQueueUtil.getDelayTaskToCancel();
-            Task task = new Task();
-            task.setId(delayTask.getId());
-            task.setState(3);
-            taskMapper.updateById(task);
+            Integer id = delayTask.getId();
+            Task task = updateState(id, 3);
+            taskResolve(delayTask,task);
             log.info("taskWasNotTaken 自动取消任务");
         };
         return runnable;
@@ -171,15 +299,13 @@ public class TaskServiceImpl implements TaskService {
             while (true) {
                 log.info("autoTaskConfirm 线程启动");
                 DelayTask delayTask = DelayQueueUtil.getDelayTaskToConfirm();
-                Task task = new Task();
-                task.setId(delayTask.getId());
-                task.setState(6);
-                taskMapper.updateById(task);
+                Integer id = delayTask.getId();
+                Task task = updateState(id,6);
+                taskResolve(delayTask,task);
                 log.info("autoTaskConfirm 自动确认任务");
             }
         };
         return runnable;
     }
-
 
 }

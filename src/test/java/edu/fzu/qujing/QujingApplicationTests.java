@@ -38,13 +38,11 @@ class QujingApplicationTests {
     @Autowired
     TaskService taskService;
 
+
     @Test
     public void contextLoads() throws JsonProcessingException {
-        User user = new User();
-        user.setStudentId("221701206");
-        user.setEmail("root");
-        user.setPassword("asd");
-        userService.save(user);
+
+
     }
 
     @CachePut(cacheNames = "te",key = "tt1")

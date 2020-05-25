@@ -1,12 +1,16 @@
 package edu.fzu.qujing.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import edu.fzu.qujing.bean.Expenses;
 import edu.fzu.qujing.bean.Recharge;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
 
-public interface RechargeMapper {
+public interface RechargeMapper extends BaseMapper<Recharge> {
     /**
      * 查询数据条数
      *
@@ -24,11 +28,9 @@ public interface RechargeMapper {
     /**
      * 按条件查找充值记录
      *
-     * @param recharge 储存有查询条件
+     * @param studentId
+     * @param page
      * @return 充值记录的数据列表
      */
-    public List<Recharge> listRechargeRecord(@Param("recharge") Recharge recharge,
-                                             @Param("pos") Integer pos,
-                                             @Param("time") String time,
-                                             @Param("pages") Integer pages);
+    IPage<Recharge> listRechargeRecord(@Param("userId") String studentId, @Param("page") Page<Recharge> page);
 }

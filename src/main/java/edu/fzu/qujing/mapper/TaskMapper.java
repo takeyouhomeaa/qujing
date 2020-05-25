@@ -29,9 +29,27 @@ public interface TaskMapper extends BaseMapper<Task> {
 
     /**
      * 查询的任务大概信息
+     * @param page
+     * @param state
      * @return
      */
     IPage<Task> listSimpleTask(Page<Task> page,@Param("state") Integer state);
+
+    /**
+     * 通过学号查找不同状态,接收/发布的任务
+     *
+     * @param page
+     * @param senderid
+     * @param receiverid
+     * @return
+     */
+    IPage<Task> listTaskByStudentId(Page<Task> page,
+                                    @Param("senderid") String senderid,
+                                    @Param("receiverid") String receiverid);
+
+
+
+
 
     /**
      * 通过任务ID 查找对应任务的详细信息

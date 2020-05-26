@@ -30,9 +30,9 @@ public interface AuthenticatedService {
     /**
      * 激活账户
      *
-     * @param id    user的id
      * @param check 用于检验是否合法
+     * @return
      */
-    public boolean activeUser(Integer id, String check);
+    public boolean activeUser(String check);
 
 }

@@ -3,14 +3,18 @@ package edu.fzu.qujing.service.impl;
 import edu.fzu.qujing.bean.User;
 import edu.fzu.qujing.service.AuthenticatedService;
 import edu.fzu.qujing.service.UserService;
+import edu.fzu.qujing.util.AuthorityUtil;
 import edu.fzu.qujing.util.JwtUtil;
 import edu.fzu.qujing.util.MailUtil;
+import edu.fzu.qujing.util.RedisUtil;
+import io.jsonwebtoken.Claims;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.crypto.hash.SimpleHash;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ByteSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,7 +41,8 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
         Subject subject = SecurityUtils.getSubject();
         UsernamePasswordToken token  = new UsernamePasswordToken(username,password);
         User userToCheck;
-        if (username.indexOf("@") == -1) {
+        String match = "@";
+        if (!username.contains(match)) {
             userToCheck = userService.getUserToCheckByStudentId(username);
         }else {
             userToCheck = userService.getUserToCheckByEmail(username);
@@ -59,15 +64,19 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
     /**
      * 激活账户
      *
-     * @param id    user的id
      * @param check 用于检验是否合法
+     * @return
      */
     @Override
-    public boolean activeUser(Integer id, String check) {
-        ByteSource credentialsSalt = ByteSource.Util.bytes(id.toString());
-        String rs = new SimpleHash("MD5",id.toString(),credentialsSalt,1024).toBase64();
-        if(rs.equals(check)){
-            return true;
+    public boolean activeUser(String check) {
+        String key = "encode";
+        if(RedisUtil.hasKey(key)) {
+            Object rs = RedisUtil.get(key);
+            if (rs.equals(check)) {
+                String principal = AuthorityUtil.getPrincipal();
+                userService.updateState(principal,1);
+                return true;
+            }
         }
         return false;
     }
@@ -83,6 +92,7 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
         Integer id = userService.saveUser(user);
         ByteSource credentialsSalt = ByteSource.Util.bytes(id.toString());
         String encode = new SimpleHash("MD5",id.toString(),credentialsSalt,1024).toBase64();
+        RedisUtil.set("encode", encode,60 * 5);
         MailUtil.sendToNoSSL(user.getEmail(),id,user.getUsername(),encode);
     }
 }

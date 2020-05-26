@@ -16,20 +16,20 @@ public interface TypeMapper extends BaseMapper<Type> {
      *
      * @return
      */
-    public List<Type> listTaskType();
+    List<Type> listTaskType();
 
     /**
      * 获取任务状态列表
      * @return
      */
-    public List<Type> listTaskState();
+    List<Type> listTaskState();
 
     /**
      * 通过类型id获取任务状态
      * @param id
      * @return
      */
-    public Type getTakeState(Integer id);
+    Type getTakeState(Integer id);
 
     /**
      * 通过类型id获取任务状态
@@ -37,5 +37,22 @@ public interface TypeMapper extends BaseMapper<Type> {
      * @param id
      * @return
      */
-    public Type getTaskType(Integer id);
+    Type getTaskType(Integer id);
+
+
+    /**
+     * 获取消费记录列表
+     *
+     * @return
+     */
+    List<Type> listExpensesType();
+
+
+    /**
+     * 通过类型id获取消费记录类型
+     *
+     * @param id
+     * @return
+     */
+    Type getExpensesType(Integer id);
 }

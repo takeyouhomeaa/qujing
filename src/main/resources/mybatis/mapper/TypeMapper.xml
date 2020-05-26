@@ -32,5 +32,16 @@
         WHERE id = #{id}
     </select>
 
+    <select id="listExpensesType" resultType="edu.fzu.qujing.bean.Type">
+        SELECT id,name
+        FROM consumptiontype
+    </select>
+
+    <select id="getExpensesType" resultType="edu.fzu.qujing.bean.Type">
+        SELECT id,name
+        FROM consumptiontype
+        WHERE id = #{id}
+    </select>
+
 
 </mapper>

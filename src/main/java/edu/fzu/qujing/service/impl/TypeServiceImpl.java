@@ -64,4 +64,27 @@ public class TypeServiceImpl implements TypeService {
     public Type getTaskType(Integer id) {
         return typeMapper.getTaskType(id);
     }
+
+    /**
+     * 通过类型id获取消费记录类型
+     *
+     * @return
+     */
+    @Override
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'")
+    public List<Type> listExpensesType() {
+        return typeMapper.listExpensesType();
+    }
+
+    /**
+     * 通过类型id获取消费记录类型
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'")
+    public Type getExpensesType(Integer id) {
+        return typeMapper.getExpensesType(id);
+    }
 }

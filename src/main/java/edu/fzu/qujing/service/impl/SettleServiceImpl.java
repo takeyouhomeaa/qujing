@@ -9,6 +9,7 @@ import edu.fzu.qujing.mapper.ExpensesMapper;
 import edu.fzu.qujing.mapper.RechargeMapper;
 import edu.fzu.qujing.mapper.UserMapper;
 import edu.fzu.qujing.service.SettleService;
+import edu.fzu.qujing.service.UserService;
 import edu.fzu.qujing.util.PageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.*;
@@ -24,7 +25,7 @@ import java.util.*;
 public class SettleServiceImpl implements SettleService {
 
     @Autowired
-    private UserServiceImpl userService;
+    private UserService userService;
 
     @Autowired
     private RechargeMapper rechargeMapper;

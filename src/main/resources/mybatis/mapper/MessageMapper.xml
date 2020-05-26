@@ -25,9 +25,6 @@
         <result property="receiveId" column="mreceiveId"></result>
         <result property="publisherId" column="mpublisherId"></result>
         <result property="time" column="mtime"></result>
-        <association property="messageType" javaType="edu.fzu.qujing.bean.MessageType">
-            <id property="id" column="mtid"></id>
-        </association>
     </resultMap>
     <select id="listMessage" resultMap="message">
         SELECT

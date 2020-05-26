@@ -1,7 +1,9 @@
 package edu.fzu.qujing.service;
 
 import edu.fzu.qujing.bean.CancelTask;
+import org.springframework.stereotype.Service;
 
+@Service
 public interface CancelTaskService {
 
     /**

@@ -1,6 +1,9 @@
 package edu.fzu.qujing;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
+import com.alipay.api.internal.parser.json.JsonConverter;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,6 +23,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import springfox.documentation.spring.web.json.Json;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -41,7 +45,11 @@ class QujingApplicationTests {
 
     @Test
     public void contextLoads() throws JsonProcessingException {
-
+        User user = new User();
+        user.setStudentId("13");
+        user.setEmail("1213");
+        user.setPassword("13232");
+        userService.saveUser(user);
 
     }
 

@@ -84,7 +84,7 @@ public class UserServiceImpl implements UserService {
      * @return 用户接受的任务数
      */
     @Override
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')")
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
     public User getReceiveTaskNumber(String studentId) {
         User user = userMapper.getNumberOfTasksAccepted(studentId);

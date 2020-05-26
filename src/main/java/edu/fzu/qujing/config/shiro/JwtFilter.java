@@ -73,10 +73,9 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
         HttpServletResponse httpServletResponse= (HttpServletResponse)response;
         httpServletResponse.setContentType("application/json;charset=UTF-8");
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("code","401");
-        jsonObject.put("msg","UNAUTHORIZED");
         String json = JSON.toJSONString(jsonObject);
-        httpServletResponse.getWriter().write(json);
+        httpServletResponse.setStatus(401);
+        httpServletResponse.getWriter().write("Unauthorized");
         return false;
     }
 
@@ -150,7 +149,7 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
         HttpServletResponse httpServletResponse = (HttpServletResponse)response;
         String newToken = null;
         if(token instanceof JwtToken){
-            newToken = JwtUtil.creatJwt(JwtUtil.JWT_ID,token.getCredentials().toString(),JwtUtil.JWT_EXPIRE);
+            newToken = JwtUtil.creatJwt(JwtUtil.JWT_ID,token.getPrincipal().toString(),JwtUtil.JWT_EXPIRE);
             log.info("创建新的jwtToken");
         }
         if (newToken != null) {

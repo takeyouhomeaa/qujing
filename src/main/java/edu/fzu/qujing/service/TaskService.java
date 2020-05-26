@@ -26,7 +26,7 @@ public interface TaskService {
      * @param pos
      * @return
      */
-    List<Task> listAccept(String studentId, String pos);
+    List<Task> listAccept(String studentId, Integer pos);
 
 
 
@@ -37,7 +37,7 @@ public interface TaskService {
      * @param pos
      * @return
      */
-    List<Task> listPublish(String studentId,String pos);
+    List<Task> listPublish(String studentId,Integer pos);
 
 
 

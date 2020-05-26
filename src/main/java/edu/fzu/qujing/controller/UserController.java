@@ -20,17 +20,7 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @RequestMapping("/find/acceptTask")
-    public Map<String, Object> findAcceptTask(HttpServletRequest request,
-                                              @RequestBody Map<String, Integer> params) throws Exception {
 
-        String studentId = JwtUtil.parseJwt(request.getHeader(JwtUtil.AUTH_HEADER)).getSubject();
-
-        Map<String, Object> map = new HashMap<>();
-//        map.put("acceptFinishTask", acceptFinishTask);
-//        map.put("accepUnfinishtTask", accepUnfinishtTask);
-        return map;
-    }
 
 
 }

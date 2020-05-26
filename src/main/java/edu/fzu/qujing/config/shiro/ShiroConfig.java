@@ -54,6 +54,7 @@ public class ShiroConfig {
         bean.setSecurityManager(securityManager);
         Map<String, Filter> filterMap = new LinkedHashMap<>();
         filterMap.put("jwtFilter", jwtFilter());
+        //filterMap.put("authc",new SimpleFormAuthenticationFilter()); 暂定
         bean.setFilters(filterMap);
 
         Map<String,String> map = new LinkedHashMap<>();
@@ -64,7 +65,7 @@ public class ShiroConfig {
         map.put("/v2/**", "anon");
         map.put("/webjars/**", "anon");
         map.put("/configuration/**", "anon");
-        map.put("/authenticated/logout", "logout"); // 退出登录
+        map.put("/authenticated/logout", "logout");
         map.put("/**","jwtFilter,authc");
         bean.setFilterChainDefinitionMap(map);
 

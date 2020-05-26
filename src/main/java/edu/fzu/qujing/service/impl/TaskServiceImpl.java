@@ -8,6 +8,7 @@ import edu.fzu.qujing.bean.User;
 import edu.fzu.qujing.mapper.TaskMapper;
 import edu.fzu.qujing.service.CancelTaskService;
 import edu.fzu.qujing.service.TaskService;
+import edu.fzu.qujing.util.AuthorityUtil;
 import edu.fzu.qujing.util.DelayQueueUtil;
 import edu.fzu.qujing.util.PageUtil;
 import edu.fzu.qujing.util.RedisUtil;
@@ -42,7 +43,7 @@ public class TaskServiceImpl implements TaskService {
      * @return
      */
     @Override
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')")
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
     public List<Task> listUnacceptedTask(Integer pos) {
         Page<Task> page = new Page<>(pos, PageUtil.PAGES);
@@ -58,7 +59,7 @@ public class TaskServiceImpl implements TaskService {
      * @return
      */
     @Override
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')")
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'")
     public Task getDetailTask(Integer id) {
         Task task = new Task();
         task.setId(id);
@@ -86,14 +87,15 @@ public class TaskServiceImpl implements TaskService {
         task.setName(map.get("name"));
         task.setContent(map.get("content"));
         task.setState(1);
-        task.setPoints(Integer.valueOf(map.get("content")));
+        task.setPoints(Integer.valueOf(map.get("points")));
         task.setSenderid(map.get("studentId"));
         task.setTtid(Integer.valueOf(map.get("ttid")));
-        Date date = new Date(System.currentTimeMillis() + Long.valueOf(map.get("ttl")));
+        Date date = new Date(System.currentTimeMillis() + Long.parseLong(map.get("ttl")) * 60000);
         task.setDeadline(date);
+        task.setExpedited(Integer.valueOf(map.get("expedited")));
         taskMapper.insert(task);
         Integer id = task.getId();
-        DelayQueueUtil.addDelayTaskToCancel(new DelayTask(id,map.get("studentId"),1000 * 60 * 10));
+        DelayQueueUtil.addDelayTaskToCancel(new DelayTask(id,AuthorityUtil.getPrincipal(),1000 * 60 * 10));
         return task;
     }
 
@@ -236,8 +238,8 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Cacheable(key = "#root.methodName + '(' + #root.args + ')")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
-    public List<Task> listAccept(String studentId, String pos) {
-        Page<Task> page = new Page<>(Integer.valueOf(pos), PageUtil.PAGES);
+    public List<Task> listAccept(String studentId, Integer pos) {
+        Page<Task> page = new Page<>(pos, PageUtil.PAGES);
         return taskMapper.listTaskByStudentId(page, null, studentId).getRecords();
     }
 
@@ -251,8 +253,8 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Cacheable(key = "#root.methodName + '(' + #root.args + ')'")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
-    public List<Task> listPublish(String studentId, String pos) {
-        Page<Task> page = new Page<>(Integer.valueOf(pos), PageUtil.PAGES);
+    public List<Task> listPublish(String studentId, Integer pos) {
+        Page<Task> page = new Page<>(pos, PageUtil.PAGES);
         return taskMapper.listTaskByStudentId(page,  studentId,null).getRecords();
     }
 

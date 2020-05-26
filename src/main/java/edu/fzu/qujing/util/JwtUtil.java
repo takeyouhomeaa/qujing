@@ -4,14 +4,17 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.codec.binary.Base64;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 public class JwtUtil {
 
     public static final Integer JWT_EXPIRE = 1000*60*30;
@@ -36,7 +39,9 @@ public class JwtUtil {
         if (ttlMillis >= 0) {
             long expMillis = nowMillis + ttlMillis;
             Date exp = new Date(expMillis);
-            builder.setExpiration(exp);     //设置过期时间
+            log.info("token过期时间为:{}",exp);
+            //设置过期时间
+            builder.setExpiration(exp);
         }
 
         return builder.compact();
@@ -62,7 +67,14 @@ public class JwtUtil {
         return secretKey;
     }
 
-    public static void main(String[] args) {
-        System.out.println(creatJwt("ozg","221701227",1000 * 60 * 10));
+    public static String getSubject(HttpServletRequest request){
+        String header = request.getHeader(JwtUtil.AUTH_HEADER);
+        try {
+            Claims claims = parseJwt(header);
+            return claims.getSubject();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

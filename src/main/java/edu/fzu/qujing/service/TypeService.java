@@ -37,4 +37,22 @@ public interface TypeService {
     Type getTaskType(Integer id);
 
 
+    /**
+     * 通过类型id获取消费记录类型
+     *
+     * @return
+     */
+    List<Type> listExpensesType();
+
+
+
+    /**
+     * 通过类型id获取消费记录类型
+     *
+     * @param id
+     * @return
+     */
+    Type getExpensesType(Integer id);
+
+
 }

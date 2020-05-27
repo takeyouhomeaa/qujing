@@ -59,7 +59,7 @@ public class RedisConfig {
         om.activateDefaultTyping(LaissezFaireSubTypeValidator.instance, ObjectMapper.DefaultTyping.NON_FINAL);
         jsonRedisSerializer.setObjectMapper(om);
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofHours(new Random().nextInt(24) + 1))
+                .entryTtl(Duration.ofMinutes(new Random().nextInt(30) + 1))
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(redisSerializer))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jsonRedisSerializer))
                 .disableCachingNullValues();

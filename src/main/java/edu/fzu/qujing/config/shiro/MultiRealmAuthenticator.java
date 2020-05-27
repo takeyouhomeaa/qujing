@@ -35,12 +35,13 @@ public class MultiRealmAuthenticator extends ModularRealmAuthenticator {
                 try {
                     info = realm.getAuthenticationInfo(token);
                 } catch (AuthenticationException e) {
-                    log.debug("Realm [" + realm + "] threw an exception" +
+                    authenticationException = e;
+                    log.error("Realm [" + realm + "] threw an exception" +
                             " during a multi-realm authentication attempt: {}" , e.getMessage());
                 }
                 aggregate = strategy.afterAttempt(realm, token, info, aggregate, authenticationException);
             }else {
-                log.debug("Realm [{}] does not support token {}.  Skipping realm.", realm, token);
+                log.error("Realm [{}] does not support token {}.  Skipping realm.", realm, token);
             }
         }
 

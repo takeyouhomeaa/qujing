@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: dev
+    active: prd
 
 
 ---
@@ -50,12 +50,12 @@ server:
 spring:
   profiles: prd
   datasource:
-    url: jdbc:mysql://localhost:3306/qujin?serverTimezone=UTC&characterEncoding=utf8
-    username: root
-    password: ozg123zxc
     type: com.alibaba.druid.pool.DruidDataSource
-    driver-class-name: com.mysql.jdbc.Driver
     druid:
+      url: jdbc:mysql://47.93.213.196:3306/qujing?serverTimezone=GMT%2B8&characterEncoding=utf8
+      username: qujing
+      password: 7xbtASLxzMBnnMG7
+      driver-class-name: com.mysql.jdbc.Driver
       initial-size: 5
       min-idle: 5
       max-active: 20
@@ -69,10 +69,12 @@ spring:
       min-evictable-idle-time-millis: 30000
       filters: stat
       async-init: true
+  redis:
+    host: 49.234.86.39
+    port: 6379
+    password: ozg123zxc
+
 mybatis-plus:
   mapper-locations: classpath*:mybatis/mapper/*.xml
-  configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-    cache-enabled: true
-    lazy-loading-enabled: true
+  config-location: classpath:mybatis/mybatis-conf.xml
 

@@ -12,6 +12,7 @@ import edu.fzu.qujing.service.PayService;
 import edu.fzu.qujing.service.SettleService;
 import edu.fzu.qujing.util.AliPayUtil;
 import edu.fzu.qujing.util.DateUtil;
+import edu.fzu.qujing.util.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +33,7 @@ public class AliPayServiceImpl implements PayService {
      * @return
      */
     @Override
-    public String AliPay(String totalAmount, String body) {
+    public String aliPay(String totalAmount, String body) {
         //获得初始化的AlipayClient
 
         AlipayClient alipayClient = AliPayUtil.getAlipayClient();
@@ -70,6 +71,7 @@ public class AliPayServiceImpl implements PayService {
         try {
             AlipayTradePagePayResponse response = alipayClient.pageExecute(request);
             if (response.isSuccess()) {
+                RedisUtil.set(out_trade_no, body);
                 form = response.getBody();//调用SDK生成表单
                 //System.out.println("调用成功, 网页支付表单:" + response.getBody());
             } else {

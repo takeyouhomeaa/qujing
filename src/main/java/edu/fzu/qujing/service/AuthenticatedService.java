@@ -10,29 +10,50 @@ import javax.servlet.http.HttpServletResponse;
 @Service
 public interface AuthenticatedService {
     /**
-     * 用户登录
+     * 用户通过学号登录
      *
      * @param username 用户名
      * @param password  密码
      * @throws AuthenticationException 权限异常
      * @return
      */
-    public ResponseEntity<String> login(String username, String password
-            ,HttpServletResponse response) throws AuthenticationException;
+    ResponseEntity<String> loginByStudentId(String username, String password, HttpServletResponse response) ;
 
+
+    /**
+     * 用户通过手机号登录
+     *
+     * @param phone
+     * @param password
+     * @param response
+     * @return
+     * @throws AuthenticationException
+     */
+    ResponseEntity<String> loginByPhone(String phone, String password, HttpServletResponse response) ;
     /**
      * 用户注册
      *
      * @param user 用户信息
+     * @return
      */
-    public void register(User user);
+    void register(User user);
 
     /**
      * 激活账户
      *
+     * @param phone
      * @param check 用于检验是否合法
      * @return
      */
-    public boolean activeUser(String check);
+    boolean activeUser(String phone,String check);
+
+
+    /**
+     * 发送验证码
+     *
+     * @param phone
+     * @return
+     */
+    ResponseEntity<String> sendCaptcha(String phone);
 
 }

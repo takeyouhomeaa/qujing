@@ -22,6 +22,9 @@ public class User implements Serializable {
     @ApiModelProperty("用户邮箱")
     private String email;
 
+    @ApiModelProperty("用户手机")
+    private String phone;
+
     @ApiModelProperty("用户昵称邮箱")
     private String username;
 

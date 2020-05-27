@@ -21,7 +21,7 @@ public interface UserService  {
      * @param user
      * @return
      */
-    Integer saveUser(User user);
+   void saveUser(User user);
 
 
     /**
@@ -56,7 +56,7 @@ public interface UserService  {
      * @param email
      * @return
      */
-    User getUserToCheckByEmail(String email);
+    User getUserToCheckByPhone(String email);
 
 
     /**
@@ -84,4 +84,13 @@ public interface UserService  {
      */
     User getUserPoints(String studentId);
 
+
+    /**
+     * 修改密码
+     *
+     * @param studentId
+     * @param password
+     * @return
+     */
+    User updatePassword(String studentId,String password);
 }

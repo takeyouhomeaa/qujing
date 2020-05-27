@@ -37,13 +37,14 @@ public class UserServiceImpl implements UserService {
     @Caching(
             put = {
                     @CachePut(key = "'getUserToCheckByStudentId(' + #user.studentId + ')'"),
-                    @CachePut(key = "'getUserToCheckByEmail(' + #user.email + ')'")}
+                    @CachePut(key = "'getUserToCheckByPhone(' + #user.phone + ')'")}
     )
     public User save(User user) {
         ByteSource credentialsSalt = ByteSource.Util.bytes(user.getStudentId());
         String pwd = new SimpleHash("MD5",user.getPassword(),
                 credentialsSalt,1024).toBase64();
         user.setPassword(pwd);
+        user.setState(1);
         userMapper.insert(user);
         return user;
     }
@@ -55,8 +56,9 @@ public class UserServiceImpl implements UserService {
      * @return
      */
     @Override
-    public Integer saveUser(User user) {
-        return save(user).getId();
+    public void saveUser(User user) {
+        String key = "toBeActivated::" + user.getPhone();
+        RedisUtil.set(key, user);
     }
 
     /**
@@ -101,17 +103,16 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * 通过邮箱查询用于认证的用户信息
+     * 通过手机号查询用于认证的用户信息
      *
-     * @param email
      * @return
      */
     @Override
     @Cacheable(key = "#root.methodName + '(' + #root.args + ')'")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
-    public User getUserToCheckByEmail(String email) {
+    public User getUserToCheckByPhone(String phone) {
         User user = new User();
-        user.setEmail(email);
+        user.setPhone(phone);
         return userMapper.getUserToCheck(user);
 
     }
@@ -162,5 +163,23 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUserPoints(String studentId) {
         return userMapper.getUserPoints(studentId);
+    }
+
+
+    /**
+     * @param studentId
+     * @param password
+     * @return
+     */
+    @CachePut(cacheNames = "user",key = "'getUserToCheckByStudentId(' + #studentId + ')'")
+    @Override
+    public User updatePassword(String studentId,String password) {
+        User user = getUserToCheckByStudentId(studentId);
+        ByteSource credentialsSalt = ByteSource.Util.bytes(studentId);
+        String pwd = new SimpleHash("MD5",password,
+                credentialsSalt,1024).toBase64();
+        user.setPassword(pwd);
+        userMapper.update(user,new QueryWrapper<User>().eq("studentId", studentId));
+        return user;
     }
 }

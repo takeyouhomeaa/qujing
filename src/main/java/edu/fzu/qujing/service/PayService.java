@@ -9,7 +9,7 @@ public interface PayService {
      * @param body        学号
      * @return 支付宝支付界面
      */
-    public String AliPay(String totalAmount, String body);
+    public String aliPay(String totalAmount, String body);
 
 
     /**

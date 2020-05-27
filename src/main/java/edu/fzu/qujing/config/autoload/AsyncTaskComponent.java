@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.concurrent.DelayQueue;
 
-
 public class AsyncTaskComponent {
     @Autowired
     ThreadPoolTaskExecutor executor;

@@ -72,7 +72,7 @@ public class ShiroConfig {
         return bean;
     }
 
-    //有问题
+
     @Bean
     public ModularRealmAuthenticator authenticator() {
         ModularRealmAuthenticator authenticator = new MultiRealmAuthenticator();
@@ -93,6 +93,9 @@ public class ShiroConfig {
     @DependsOn("hashedCredentialsMatcher")
     public SecurityManager securityManager(@Qualifier("userRealm") UserRealm userRealm){
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
+
+        securityManager.setAuthenticator(authenticator());
+
         List<Realm> list = new ArrayList<>();
         list.add(userRealm);
         list.add(jwtRealm());

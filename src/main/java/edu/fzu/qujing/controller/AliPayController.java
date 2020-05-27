@@ -7,10 +7,7 @@ import edu.fzu.qujing.bean.Recharge;
 import edu.fzu.qujing.bean.Type;
 import edu.fzu.qujing.service.PayService;
 import edu.fzu.qujing.service.SettleService;
-import edu.fzu.qujing.util.AliPayUtil;
-import edu.fzu.qujing.util.AuthorityUtil;
-import edu.fzu.qujing.util.DateUtil;
-import edu.fzu.qujing.util.JwtUtil;
+import edu.fzu.qujing.util.*;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -39,7 +36,7 @@ public class AliPayController {
 
     @ApiOperation(value = "用户充值接口", notes = "会自动跳转到支付页面")
     @ApiImplicitParams({
-            @ApiImplicitParam(value = "支付金额",name = "totalAmount",dataType = "string",required = true)
+            @ApiImplicitParam(value = "支付金额", name = "totalAmount", dataType = "string", required = true)
     })
 
 
@@ -47,10 +44,9 @@ public class AliPayController {
     public String goAlipay(@ApiIgnore @RequestBody Map<String, String> map,
                            @ApiIgnore HttpServletRequest request) {
         String username = JwtUtil.getSubject(request);
-        AuthorityUtil.setPrincipal(username);
         String totalAmount = map.get("totalAmount");
         String body = username;
-        String form = payService.AliPay(totalAmount, body);
+        String form = payService.aliPay(totalAmount, body);
         return form;
     }
 
@@ -58,11 +54,14 @@ public class AliPayController {
     @ApiIgnore
     @RequestMapping("/return_url")
     public String return_url(HttpServletRequest request) throws IOException, AlipayApiException {
-        String username = AuthorityUtil.getPrincipal();
         AuthorityUtil.removePrincipal();
         boolean verifyResult = AliPayUtil.rsaCheckV1(request);
         ModelAndView mv = null;
         if (verifyResult) {
+            String out_trade_no = request.getParameter("out_trade_no");
+            Object rs = RedisUtil.get(out_trade_no);
+            String username = (String) rs;
+            RedisUtil.del(out_trade_no);
             String total_amount = request.getParameter("total_amount");
             Integer amount = Double.valueOf(total_amount).intValue();
             System.out.println(amount);
@@ -74,17 +73,17 @@ public class AliPayController {
 
     @ApiOperation(value = "用户提现接口")
     @ApiImplicitParams({
-            @ApiImplicitParam(value = "金额",name = "amount",dataType = "string",required = true),
-            @ApiImplicitParam(value = "支付宝账户",name = "aliAccount",dataType = "string",required = true)
+            @ApiImplicitParam(value = "金额", name = "amount", dataType = "string", required = true),
+            @ApiImplicitParam(value = "支付宝账户", name = "aliAccount", dataType = "string", required = true)
     })
 
     @ApiResponses({
-            @ApiResponse(code = 200,message = "Withdraw success"),
-            @ApiResponse(code = 201,message = "没有这个返回值"),
-            @ApiResponse(code = 400,message = "Withdraw fail"),
-            @ApiResponse(code = 401,message = "没有这个返回值"),
-            @ApiResponse(code = 403,message = "没有这个返回值"),
-            @ApiResponse(code = 401,message = "没有这个返回值")
+            @ApiResponse(code = 200, message = "Withdraw success"),
+            @ApiResponse(code = 201, message = "没有这个返回值"),
+            @ApiResponse(code = 400, message = "Withdraw fail"),
+            @ApiResponse(code = 401, message = "没有这个返回值"),
+            @ApiResponse(code = 403, message = "没有这个返回值"),
+            @ApiResponse(code = 401, message = "没有这个返回值")
     })
 
     @PutMapping("/withdraw")

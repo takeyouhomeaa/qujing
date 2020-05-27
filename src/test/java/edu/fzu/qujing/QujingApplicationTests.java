@@ -10,10 +10,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.fzu.qujing.bean.Task;
 import edu.fzu.qujing.bean.Type;
 import edu.fzu.qujing.bean.User;
+import edu.fzu.qujing.config.annotation.test;
 import edu.fzu.qujing.mapper.TaskMapper;
 import edu.fzu.qujing.mapper.UserMapper;
 import edu.fzu.qujing.service.TaskService;
 import edu.fzu.qujing.service.UserService;
+import edu.fzu.qujing.util.PhoneUtil;
 import edu.fzu.qujing.util.RedisUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,35 +32,17 @@ import java.util.List;
 @SpringBootTest
 class QujingApplicationTests {
 
-    @Autowired
-    RedisTemplate redisTemplate;
-
-    @Autowired
-    TaskMapper taskMapper;
-
-    @Autowired
-    UserService userService;
-
-    @Autowired
-    TaskService taskService;
-
 
     @Test
     public void contextLoads() throws JsonProcessingException {
-        User user = new User();
-        user.setStudentId("13");
-        user.setEmail("1213");
-        user.setPassword("13232");
-        userService.saveUser(user);
-
-    }
-
-    @CachePut(cacheNames = "te",key = "tt1")
-    public Task taskList(Task task) {
-        return taskMapper.selectById(10101);
-
+        boolean send = PhoneUtil.send("18030389136", PhoneUtil.getCode());
+        System.out.println(send);
     }
 
 
+    @test(description = "1111")
+    public void test() {
+
+    }
 
 }

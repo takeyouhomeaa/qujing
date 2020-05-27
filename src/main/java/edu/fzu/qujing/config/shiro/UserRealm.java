@@ -36,38 +36,14 @@ public class UserRealm extends AuthorizingRealm {
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
         UsernamePasswordToken token = (UsernamePasswordToken) authenticationToken;
         String username = token.getUsername();
-        User userToCheck;
-        if (username.indexOf("@") == -1) {
-            userToCheck = userService.getUserToCheckByStudentId(username);
-        }else {
-            userToCheck = userService.getUserToCheckByEmail(username);
-        }
-        if(userToCheck == null){
-            throw new UnknownAccountException();
-        }
-        if (userToCheck != null) {
-            Date nowTime = new Date();
-            Date endTime = userToCheck.getEndTime();
-            if (endTime != null && nowTime.compareTo(endTime) != -1) {
-                userService.updateState(userToCheck.getStudentId(),1);
-            }else if(endTime != null && nowTime.compareTo(endTime) == -1){
-                userService.updateState(userToCheck.getStudentId(),2);
-                throw new  LockedAccountException();
-            }
+        User userToCheck  = userService.getUserToCheckByStudentId(username);
 
-            if (userToCheck.getState() == 0) {
-                throw new DisabledAccountException();
-            }
+        ByteSource credentialsSalt = ByteSource.Util.bytes(userToCheck.getStudentId());
+        return new SimpleAuthenticationInfo(userToCheck.getStudentId(),
+                userToCheck.getPassword(),
+                credentialsSalt,
+                getName());
 
-            if(userToCheck.getState() == 1){
-                ByteSource credentialsSalt = ByteSource.Util.bytes(userToCheck.getStudentId());
-                return new SimpleAuthenticationInfo(userToCheck.getStudentId(),
-                                                    userToCheck.getPassword(),
-                                                    credentialsSalt,
-                                                    getName());
-            }
-        }
-        return null;
     }
 
 }

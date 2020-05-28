@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import javax.naming.AuthenticationException;
 
 @Service
-public interface UserService  {
+public interface UserService {
 
     /**
      * 保存对密码加密后的user数据
@@ -18,17 +18,18 @@ public interface UserService  {
 
     /**
      * 保存用户
+     *
      * @param user
      * @return
      */
-   void saveUser(User user);
+    void saveUser(User user);
 
 
     /**
      * 对用户的接受任务数进行修改
      *
      * @param studentId 学号
-     * @param count   任务数
+     * @param count     任务数
      * @return
      */
     User updateReceiveTaskNumber(String studentId, int count);
@@ -66,11 +67,12 @@ public interface UserService  {
      * @param state
      * @return
      */
-    User updateState(String studentId,Integer state);
+    User updateState(String studentId, Integer state);
 
 
     /**
      * 修改用户的积分
+     *
      * @param user
      * @return
      */
@@ -79,6 +81,7 @@ public interface UserService  {
 
     /**
      * 获取用户所有的积分
+     *
      * @param studentId
      * @return
      */
@@ -89,8 +92,35 @@ public interface UserService  {
      * 修改密码
      *
      * @param studentId
-     * @param password
+     * @param oldPwd
+     * @param newPwd
      * @return
      */
-    User updatePassword(String studentId,String password);
+    User updatePassword(String studentId, String oldPwd, String newPwd);
+
+
+    /**
+     * 修改密码
+     *
+     * @param phone
+     * @param newPwd
+     * @return
+     */
+    User updatePassword(String phone, String newPwd);
+
+    /**
+     * 检查学号是否存在
+     *
+     * @param studentId
+     * @return
+     */
+    boolean checkStudentId(String studentId);
+
+    /**
+     * 检查手机号是否存在
+     *
+     * @param phone
+     * @return
+     */
+    boolean checkPhone(String phone);
 }

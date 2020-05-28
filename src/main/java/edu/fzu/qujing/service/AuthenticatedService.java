@@ -47,6 +47,14 @@ public interface AuthenticatedService {
      */
     boolean activeUser(String phone,String check);
 
+    /**
+     * 对验证码进行验证
+     *
+     * @param check
+     * @return
+     */
+
+    boolean verifyCaptcha(String check,String phone);
 
     /**
      * 发送验证码

@@ -36,8 +36,9 @@ public class UserServiceImpl implements UserService {
     @Override
     @Caching(
             put = {
-                    @CachePut(key = "'getUserToCheckByStudentId(' + #user.studentId + ')'"),
-                    @CachePut(key = "'getUserToCheckByPhone(' + #user.phone + ')'")}
+                    @CachePut(key = "'getUserToCheckByStudentId(' + #user.studentId + ')'",unless = "#result == null"),
+                    @CachePut(key = "'getUserToCheckByPhone(' + #user.phone + ')'",unless = "#result == null")
+            }
     )
     public User save(User user) {
         ByteSource credentialsSalt = ByteSource.Util.bytes(user.getStudentId());
@@ -58,7 +59,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void saveUser(User user) {
         String key = "toBeActivated::" + user.getPhone();
-        RedisUtil.set(key, user);
+        RedisUtil.set(key, user,60 * 10);
     }
 
     /**
@@ -69,8 +70,12 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Caching(
-            cacheable = {@Cacheable(key = "'getNumberOfTasksAccepted' + '(' + #studentId + ')'")},
-            put = {@CachePut(key = "'getNumberOfTasksAccepted' + '(' + #studentId + ')'")}
+            cacheable = {
+                    @Cacheable(key = "'getNumberOfTasksAccepted' + '(' + #studentId + ')'",unless = "#result == null")
+            },
+            put = {
+                    @CachePut(key = "'getNumberOfTasksAccepted' + '(' + #studentId + ')'",unless = "#result == null")
+            }
     )
     public User updateReceiveTaskNumber(String studentId, int count) {
         User user = userMapper.getNumberOfTasksAccepted(studentId);
@@ -86,7 +91,7 @@ public class UserServiceImpl implements UserService {
      * @return 用户接受的任务数
      */
     @Override
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'")
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
     public User getReceiveTaskNumber(String studentId) {
         User user = userMapper.getNumberOfTasksAccepted(studentId);
@@ -94,7 +99,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'")
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
     public User getUserToCheckByStudentId(String studentId) {
         User user = new User();
@@ -108,7 +113,7 @@ public class UserServiceImpl implements UserService {
      * @return
      */
     @Override
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'")
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
     public User getUserToCheckByPhone(String phone) {
         User user = new User();
@@ -128,10 +133,10 @@ public class UserServiceImpl implements UserService {
     @Override
     @Caching(
             cacheable = {
-                    @Cacheable(key = "'getUserToCheckByStudentId(' + #studentId + ')'")
+                    @Cacheable(key = "'getUserToCheckByStudentId(' + #studentId + ')'",unless = "#result == null")
             },
             put = {
-                    @CachePut(key = "'getUserToCheckByStudentId(' + #studentId + ')'")
+                    @CachePut(key = "'getUserToCheckByStudentId(' + #studentId + ')'",unless = "#result == null")
             }
     )
     public User updateState(String studentId,Integer state) {
@@ -147,7 +152,7 @@ public class UserServiceImpl implements UserService {
      * @return
      */
     @Override
-    @CachePut(key = "'getUserPoints(' + #user.studentId +')'")
+    @CachePut(key = "'getUserPoints(' + #user.studentId +')'",unless = "#result == null")
     public User updatePoints(User user) {
         userMapper.updateById(user);
         return user;
@@ -159,7 +164,7 @@ public class UserServiceImpl implements UserService {
      * @param studentId
      * @return
      */
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'")
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     @Override
     public User getUserPoints(String studentId) {
         return userMapper.getUserPoints(studentId);
@@ -168,18 +173,98 @@ public class UserServiceImpl implements UserService {
 
     /**
      * @param studentId
-     * @param password
+     * @param oldPwd
+     * @param newPwd
      * @return
      */
-    @CachePut(cacheNames = "user",key = "'getUserToCheckByStudentId(' + #studentId + ')'")
+    @Caching(
+            put = {
+                    @CachePut(cacheNames = "user",key = "'getUserToCheckByPhone(' + #result.phone + ')'",unless = "#result == null"),
+                    @CachePut(cacheNames = "user",key = "'getUserToCheckByStudentId(' + #studentId + ')'",unless = "#result == null")
+            }
+    )
     @Override
-    public User updatePassword(String studentId,String password) {
+    public User updatePassword(String studentId,String oldPwd,String newPwd) {
+
         User user = getUserToCheckByStudentId(studentId);
         ByteSource credentialsSalt = ByteSource.Util.bytes(studentId);
-        String pwd = new SimpleHash("MD5",password,
-                credentialsSalt,1024).toBase64();
-        user.setPassword(pwd);
-        userMapper.update(user,new QueryWrapper<User>().eq("studentId", studentId));
+        String oldPassword = new SimpleHash("MD5", oldPwd,
+                credentialsSalt, 1024).toBase64();
+
+        if(oldPassword.equals(user.getPassword())) {
+            String newPassword = new SimpleHash("MD5", newPwd,
+                    credentialsSalt, 1024).toBase64();
+            if(newPassword.equals(oldPassword)){
+                return user;
+            }
+            user.setPassword(newPassword);
+            userMapper.update(user, new QueryWrapper<User>().eq("studentId", studentId));
+            return user;
+        }
+
+        return null;
+    }
+
+    @Override
+    @Caching(
+        put = {
+                @CachePut(cacheNames = "user",key = "'getUserToCheckByPhone(' + #phone + ')'",unless = "#result == null"),
+                @CachePut(cacheNames = "user",key = "'getUserToCheckByStudentId(' + #result.studentId + ')'",unless = "#result == null")
+        }
+    )
+    public User updatePassword(String phone, String newPwd) {
+        User user = getUserToCheckByPhone(phone);
+        ByteSource credentialsSalt = ByteSource.Util.bytes(user.getStudentId());
+        String newPassword = new SimpleHash("MD5", newPwd,
+                credentialsSalt, 1024).toBase64();
+        if(newPassword.equals(user.getPassword())) {
+            return user;
+        }
+        user.setPassword(newPassword);
+        userMapper.update(user, new QueryWrapper<User>().eq("studentId", user.getStudentId()));
         return user;
+    }
+
+
+    //后期使用布隆过滤器实现该方法
+    
+    /**
+     * 检查手机号是否存在
+     *
+     * @param phone
+     * @return
+     */
+    @Override
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
+    public boolean checkPhone(String phone) {
+        User user = userMapper.getPhone(phone);
+        if(user != null) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 检查学号是否存在
+     *
+     * @param studentId
+     * @return
+     */
+    @Override
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
+    public boolean checkStudentId(String studentId) {
+        User user = userMapper.getStudentId(studentId);
+        if(user != null) {
+            return true;
+        }
+        return false;
+    }
+
+
+    public static void main(String[] args) {
+        ByteSource credentialsSalt = ByteSource.Util.bytes("221701206");
+        String newPassword = new SimpleHash("MD5", "123456abc",
+                credentialsSalt, 1024).toBase64();
+        System.out.println(newPassword);
     }
 }

@@ -2,6 +2,7 @@ package edu.fzu.qujing.controller;
 
 import edu.fzu.qujing.bean.User;
 import edu.fzu.qujing.service.AuthenticatedService;
+import edu.fzu.qujing.service.UserService;
 import edu.fzu.qujing.util.AuthorityUtil;
 import edu.fzu.qujing.util.JwtUtil;
 import io.swagger.annotations.*;
@@ -23,6 +24,8 @@ public class AuthenticatedController {
     @Autowired
     private AuthenticatedService authenticatedService;
 
+    @Autowired
+    private UserService userService;
     /**
      * @param map
      * @return
@@ -100,11 +103,50 @@ public class AuthenticatedController {
     }
 
 
-
-
     @ApiOperation(value = "用户退出登录接口", notes = "请在退出登录事件发生时将heaer中的jwtToken 清除")
     @GetMapping("/logout")
     public ResponseEntity<String> logout() {
         return ResponseEntity.ok("Logout");
+    }
+
+
+
+    @ApiOperation(value = "忘记密码接口")
+    @ApiImplicitParams({
+            @ApiImplicitParam(value = "手机号", name = "phone", dataType = "string", required = true),
+            @ApiImplicitParam(value = "新密码", name = "newPwd", dataType = "string", required = true)
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Modified success"),
+            @ApiResponse(code = 403, message = "The old password does not match")
+    })
+    @PutMapping("/forgetPwd")
+    public ResponseEntity<String> forgetPassword(@ApiIgnore @RequestBody Map<String,String> map) {
+        User user = userService.updatePassword(map.get("phone"),map.get("newPwd"));
+        if(user != null){
+            return ResponseEntity.ok("Modified success");
+        }
+
+        return ResponseEntity.status(403).body("Modified success");
+    }
+
+
+
+
+    @ApiOperation(value = "验证验证码接口")
+    @ApiImplicitParams({
+            @ApiImplicitParam(value = "手机号", name = "phone", dataType = "string", required = true),
+            @ApiImplicitParam(value = "验证码", name = "check", dataType = "string", required = true)
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "true"),
+            @ApiResponse(code = 404, message = "false")
+    })
+    @GetMapping("/verifyCaptcha")
+    public ResponseEntity<String> verifyCaptcha(@ApiIgnore @RequestBody Map<String,String> map) {
+        if(authenticatedService.verifyCaptcha(map.get("check"), map.get("phone"))){
+            return ResponseEntity.ok("true");
+        }
+        return ResponseEntity.status(404).body("false");
     }
 }

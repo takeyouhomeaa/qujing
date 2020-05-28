@@ -30,7 +30,7 @@ public class CancelTaskServiceImpl implements CancelTaskService {
      * @param type
      * @return
      */
-    @CachePut(key = "#root.methodName + '(' + #root.args + ')'")
+    @CachePut(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     @Override
     public CancelTask save(Integer id, String content, String type) {
         CancelTask cancelTask = new CancelTask();

@@ -35,4 +35,20 @@ public interface UserMapper extends BaseMapper<User> {
      */
     User getUserPoints(String studentId);
 
+
+    /**
+     * 获得手机号
+     * @param phone
+     * @return
+     */
+    User getPhone(String phone);
+
+
+    /**
+     * 获取学号
+     * @param studentId
+     * @return
+     */
+    User getStudentId(String studentId);
+
 }

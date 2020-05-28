@@ -6,6 +6,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +24,18 @@ public class RedisUtil {
     @Qualifier("redisTemplate")
     public void setRedisTemplate(RedisTemplate redisTemplate) {
         RedisUtil.redisTemplate = redisTemplate;
+    }
+
+    /**
+     * 清空缓存
+     * @return
+     */
+    public static void flushdb(){
+        Set<String> keys = redisTemplate.keys("*");
+        Iterator<String> it1 = keys.iterator();
+        while (it1.hasNext()) {
+            redisTemplate.delete(it1.next());
+        }
     }
 
     /**

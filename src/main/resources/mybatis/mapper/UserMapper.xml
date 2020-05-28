@@ -84,7 +84,17 @@
         </where>
     </select>
 
+    <select id="getPhone" resultType="edu.fzu.qujing.bean.User">
+        SELECT id,phone
+        FROM user
+        WHERE phone = #{phone}
+    </select>
 
+    <select id="getStudentId" resultType="edu.fzu.qujing.bean.User">
+        SELECT id,studentId
+        FROM user
+        WHERE studentId = #{studentId}
+    </select>
 
 
 </mapper>

@@ -104,7 +104,7 @@ public class SettleServiceImpl implements SettleService {
      * @return 消费记录列表
      */
     @Override
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'")
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     @Transactional(propagation = Propagation.NOT_SUPPORTED, readOnly = true)
     public List<Expenses> listExpensesRecord(String studentId, Integer pos) {
         return expensesMapper.listExpense(studentId,new Page<Expenses>(pos,PageUtil.PAGES)).getRecords();
@@ -117,7 +117,7 @@ public class SettleServiceImpl implements SettleService {
      * @return 充值记录列表
      */
     @Override
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'")
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     @Transactional(propagation = Propagation.NOT_SUPPORTED, readOnly = true)
     public List<Recharge> listRecharheRecord(String studentId, Integer pos) {
 

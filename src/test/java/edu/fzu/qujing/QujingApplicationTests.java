@@ -35,8 +35,7 @@ class QujingApplicationTests {
 
     @Test
     public void contextLoads() throws JsonProcessingException {
-        boolean send = PhoneUtil.send("18030389136", PhoneUtil.getCode());
-        System.out.println(send);
+
     }
 
 

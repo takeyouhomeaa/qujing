@@ -43,7 +43,7 @@ public class TaskServiceImpl implements TaskService {
      * @return
      */
     @Override
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'")
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
     public List<Task> listUnacceptedTask(Integer pos) {
         Page<Task> page = new Page<>(pos, PageUtil.PAGES);
@@ -59,7 +59,7 @@ public class TaskServiceImpl implements TaskService {
      * @return
      */
     @Override
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'")
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     public Task getDetailTask(Integer id) {
         Task task = new Task();
         task.setId(id);
@@ -75,7 +75,7 @@ public class TaskServiceImpl implements TaskService {
      */
     @Override
     @Caching(
-            put = @CachePut(key = "'getDetailTask(' + #result.id + ')'"),
+            put = @CachePut(key = "'getDetailTask(' + #result.id + ')'",unless = "#result == null"),
             evict = {
                     @CacheEvict(key = "'listUnacceptedTask(*)'"),
                     @CacheEvict(key = "'listPublish(*)'"),
@@ -116,7 +116,7 @@ public class TaskServiceImpl implements TaskService {
      * @return
      */
     @Caching(
-            put = @CachePut(key = "'getDetailTask(' + #id + ')'"),
+            put = @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null"),
             evict = {
                     @CacheEvict(key = "'listUnacceptedTask(*)'"),
                     @CacheEvict(key = "'listAccept(*)'")
@@ -144,7 +144,7 @@ public class TaskServiceImpl implements TaskService {
      * @param type    取消类型
      */
     @Caching(
-            put = @CachePut(key = "'getDetailTask(' + #id + ')'"),
+            put = @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null"),
             evict = {
                     @CacheEvict(key = "'listAccept( '+ #studentId + ',*)'"),
                     @CacheEvict(key = "'listPublish( '+ #studentId + ',*)'"),
@@ -169,7 +169,7 @@ public class TaskServiceImpl implements TaskService {
      * @param type    取消类型
      */
     @Caching(
-            put = @CachePut(key = "'getDetailTask(' + #id + ')'"),
+            put = @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null"),
             evict = {
                     @CacheEvict(key = "'listAccept( '+ #studentId + ',*)'"),
                     @CacheEvict(key = "'listPublish( '+ #studentId + ',*)'"),
@@ -190,7 +190,7 @@ public class TaskServiceImpl implements TaskService {
      * @param id 任务ID
      */
     @Caching(
-            put = @CachePut(key = "'getDetailTask(' + #id + ')'"),
+            put = @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null"),
             evict = {
                     @CacheEvict(key = "'listAccept( '+ #studentId + ',*)'"),
                     @CacheEvict(key = "'listPublish( '+ #studentId + ',*)'")
@@ -210,7 +210,7 @@ public class TaskServiceImpl implements TaskService {
      */
     @Caching(
             put = {
-                    @CachePut(key = "'getDetailTask(' + #id + ')'"),
+                    @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null"),
             },
             evict = {
                     @CacheEvict(key = "'listAccept( '+ #studentId + ',*)'"),
@@ -236,7 +236,7 @@ public class TaskServiceImpl implements TaskService {
      * @return
      */
     @Override
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')")
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')",unless = "#result == null")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
     public List<Task> listAccept(String studentId, Integer pos) {
         Page<Task> page = new Page<>(pos, PageUtil.PAGES);
@@ -251,7 +251,7 @@ public class TaskServiceImpl implements TaskService {
      * @return
      */
     @Override
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'")
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
     public List<Task> listPublish(String studentId, Integer pos) {
         Page<Task> page = new Page<>(pos, PageUtil.PAGES);

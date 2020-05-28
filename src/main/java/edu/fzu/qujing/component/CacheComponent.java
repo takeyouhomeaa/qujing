@@ -1,26 +1,27 @@
-package edu.fzu.qujing.config.autoload;
+package edu.fzu.qujing.component;
 
-import com.alipay.api.internal.parser.json.JsonConverter;
 import edu.fzu.qujing.bean.DelayTask;
-import edu.fzu.qujing.service.TaskService;
 import edu.fzu.qujing.util.DelayQueueUtil;
 import edu.fzu.qujing.util.RedisUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.concurrent.DelayQueue;
 
-public class AsyncTaskComponent {
-    @Autowired
-    ThreadPoolTaskExecutor executor;
+@Slf4j
+@Component
+public class CacheComponent implements ApplicationRunner {
 
-    @Autowired
-    TaskService taskService;
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        delayiTaskIit();
+        RedisUtil.flushdb();
+    }
 
-    @PostConstruct
-    public void init() {
+    private void delayiTaskIit() {
+
         String key1 = "delayQueueToCancel";
         String key2 = "delayQueueToConfirm";
         if(RedisUtil.hasKey(key1)){
@@ -31,7 +32,11 @@ public class AsyncTaskComponent {
             Object delayQueueToConfirm = RedisUtil.get(key2);
             DelayQueueUtil.setDelayQueueToCancel((DelayQueue<DelayTask>)delayQueueToConfirm);
         }
-        executor.execute(taskService.taskWasNotTaken());
-        executor.execute(taskService.autoTaskConfirm());
+
+        log.info("延迟任务加载完毕");
+    }
+
+    private void cachePreload(){
+        //后期在补充
     }
 }

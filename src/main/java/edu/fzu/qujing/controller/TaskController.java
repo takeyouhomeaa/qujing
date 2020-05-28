@@ -131,7 +131,7 @@ public class TaskController {
     @ApiOperation(value = "获取未被接受的任务列表", notes = "URL传递pos,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
 
     @GetMapping("/listUnacceptedTask/{pos}")
-    public List<Task> listUnacceptedTask(@PathVariable("pos") Integer pos) {
+    public List<Task> listUnacceptedTask(@ApiIgnore @PathVariable("pos") Integer pos) {
         return taskService.listUnacceptedTask(pos);
     }
 

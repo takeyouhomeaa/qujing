@@ -98,7 +98,7 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
         if(RedisUtil.hasKey(key)) {
             Object rs = RedisUtil.get(key);
             if (rs.equals(check)) {
-                Object obj = RedisUtil.get("key2");
+                Object obj = RedisUtil.get(key2);
                 User user = (User)obj;
                 userService.save(user);
                 return true;
@@ -135,4 +135,18 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
     @CacheEvict(cacheNames = "user",key = "'getUserToCheckByStudentId(' + #studentId + ')'")
     public void logout(String studentId){}
 
+
+    @Override
+    public boolean verifyCaptcha(String check,String phone) {
+        String key = "code::" + phone;
+        if(RedisUtil.hasKey(key)){
+            Object rs = RedisUtil.get(key);
+            String code = (String)rs;
+            if(code.equals(check)){
+                RedisUtil.del(key);
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -58,11 +58,11 @@ public class AliPayServiceImpl implements PayService {
         String studentId = AliPayUtil.transcoding(body);
 
         model.setOutTradeNo(out_trade_no);
-        // System.out.println("out_trade_no"+out_trade_no);
+
         model.setTotalAmount(total_amount);
-        // System.out.println("total_amount" +total_amount);
+
         model.setBody(studentId);
-        // System.out.println("body" + studentId）;
+
         model.setProductCode("FAST_INSTANT_TRADE_PAY");
         model.setSubject(subject);
         request.setBizModel(model);
@@ -72,8 +72,7 @@ public class AliPayServiceImpl implements PayService {
             AlipayTradePagePayResponse response = alipayClient.pageExecute(request);
             if (response.isSuccess()) {
                 RedisUtil.set(out_trade_no, body);
-                form = response.getBody();//调用SDK生成表单
-                //System.out.println("调用成功, 网页支付表单:" + response.getBody());
+                form = response.getBody();
             } else {
                 System.out.println("调用失败:" + response.getSubMsg());
             }

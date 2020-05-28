@@ -21,7 +21,6 @@ public class TypeController {
     TypeService typeService;
 
     @ApiOperation(value = "获取任务状态接口")
-
     @GetMapping("/listTaskState")
     public List<Type> listTaskState() {
        return typeService.listTaskState();
@@ -31,7 +30,6 @@ public class TypeController {
 
 
     @ApiOperation(value = "获取任务类型接口")
-
     @GetMapping("/listTaskType")
     public List<Type> listTaskType() {
         return typeService.listTaskType();
@@ -41,7 +39,6 @@ public class TypeController {
 
 
     @ApiOperation(value = "通过id获取任务类型接口",notes = "通过URL传递id")
-
     @GetMapping("/getTaskType/{id}")
     public Type getTaskType(@ApiIgnore @PathVariable("id") Integer id) {
         return typeService.getTaskType(id);
@@ -51,7 +48,6 @@ public class TypeController {
 
 
     @ApiOperation(value = "通过id获取任务状态接口",notes = "通过URL传递id")
-
     @GetMapping("/getTaskState/{id}")
     public Type getTaskState(@ApiIgnore @PathVariable("id") Integer id) {
         return typeService.getTakeState(id);
@@ -59,7 +55,6 @@ public class TypeController {
 
 
     @ApiOperation(value = "获取消费类型接口")
-
     @GetMapping("/listExpensesType")
     public List<Type> listExpensesType() {
         return typeService.listExpensesType();
@@ -67,7 +62,6 @@ public class TypeController {
 
 
     @ApiOperation(value = "通过id获取消费类型接口",notes = "通过URL传递id")
-
     @GetMapping("/getExpensesType/{id}")
     public Type getExpensesType(@ApiIgnore @PathVariable("id") Integer id) {
         return typeService.getExpensesType(id);

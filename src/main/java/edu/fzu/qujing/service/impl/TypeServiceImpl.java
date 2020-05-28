@@ -48,7 +48,7 @@ public class TypeServiceImpl implements TypeService {
      * @return
      */
     @Override
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'")
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     public Type getTakeState(Integer id) {
         return typeMapper.getTakeState(id);
     }
@@ -60,7 +60,7 @@ public class TypeServiceImpl implements TypeService {
      * @return
      */
     @Override
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'")
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     public Type getTaskType(Integer id) {
         return typeMapper.getTaskType(id);
     }
@@ -83,7 +83,7 @@ public class TypeServiceImpl implements TypeService {
      * @return
      */
     @Override
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'")
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     public Type getExpensesType(Integer id) {
         return typeMapper.getExpensesType(id);
     }

@@ -1,9 +1,6 @@
 package edu.fzu.qujing.config.shiro;
 
-import org.apache.shiro.authc.credential.CredentialsMatcher;
-import org.apache.shiro.authc.credential.DefaultPasswordService;
-import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
-import org.apache.shiro.authc.credential.PasswordService;
+import org.apache.shiro.authc.credential.*;
 import org.apache.shiro.authc.pam.AuthenticationStrategy;
 import org.apache.shiro.authc.pam.FirstSuccessfulStrategy;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
@@ -58,7 +55,7 @@ public class ShiroConfig {
         bean.setFilters(filterMap);
 
         Map<String,String> map = new LinkedHashMap<>();
-        map.put("/authenticated/*","anon");
+        map.put("/authenticated/**","anon");
         map.put("/swagger-ui.html","anon");
         map.put("/swagger/**", "anon");
         map.put("/swagger-resources/**", "anon");
@@ -91,7 +88,8 @@ public class ShiroConfig {
 
     @Bean("securityManager")
     @DependsOn("hashedCredentialsMatcher")
-    public SecurityManager securityManager(@Qualifier("userRealm") UserRealm userRealm){
+    public SecurityManager securityManager(@Qualifier("userRealm") UserRealm userRealm,
+                                           @Qualifier("phoneRealm") PhoneRealm phoneRealm){
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
 
         securityManager.setAuthenticator(authenticator());
@@ -99,6 +97,7 @@ public class ShiroConfig {
         List<Realm> list = new ArrayList<>();
         list.add(userRealm);
         list.add(jwtRealm());
+        list.add(phoneRealm);
         securityManager.setRealms(list);
 
         DefaultSubjectDAO subjectDAO = new DefaultSubjectDAO();
@@ -123,6 +122,13 @@ public class ShiroConfig {
         return userRealm;
     }
 
+    @Bean("phoneRealm")
+    public PhoneRealm phoneRealm(@Qualifier("simpleCredentialsMatcher") SimpleCredentialsMatcher credentialsMatcher) {
+        PhoneRealm phoneRealm = new PhoneRealm();
+        phoneRealm.setCredentialsMatcher(credentialsMatcher);
+        return phoneRealm;
+    }
+
     @Bean("hashedCredentialsMatcher")
     public HashedCredentialsMatcher credentialsMatcher() {
         HashedCredentialsMatcher credentialsMatcher = new HashedCredentialsMatcher();
@@ -132,4 +138,10 @@ public class ShiroConfig {
         return credentialsMatcher;
     }
 
+
+    @Bean("simpleCredentialsMatcher")
+    public SimpleCredentialsMatcher simpleCredentialsMatcher() {
+        SimpleCredentialsMatcher credentialsMatcher = new SimpleCredentialsMatcher();
+        return credentialsMatcher;
+    }
 }

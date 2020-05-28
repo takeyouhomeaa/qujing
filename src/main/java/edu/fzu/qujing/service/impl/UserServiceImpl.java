@@ -213,6 +213,9 @@ public class UserServiceImpl implements UserService {
         }
     )
     public User updatePassword(String phone, String newPwd) {
+        if(!RedisUtil.hasKey("")){
+            return null;
+        }
         User user = getUserToCheckByPhone(phone);
         ByteSource credentialsSalt = ByteSource.Util.bytes(user.getStudentId());
         String newPassword = new SimpleHash("MD5", newPwd,

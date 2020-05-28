@@ -48,20 +48,45 @@ public interface AuthenticatedService {
     boolean activeUser(String phone,String check);
 
     /**
-     * 对验证码进行验证
+     * 注册时对验证码进行验证
      *
      * @param check
      * @return
      */
 
-    boolean verifyCaptcha(String check,String phone);
+    boolean verifyCaptchaToRegister(String check,String phone);
 
+
+    /**
+     * 忘记密码时对验证码进行验证
+     *
+     * @param check
+     * @param phone
+     * @return
+     */
+    boolean verifyCaptchaToForgetPwd(String check,String phone);
+
+
+    /**
+     * 登录时对验证码进行验证
+     *
+     * @param check
+     * @param phone
+     * @return
+     */
+    boolean verifyCaptchaToLogin(String check,String phone);
     /**
      * 发送验证码
      *
      * @param phone
      * @return
      */
-    ResponseEntity<String> sendCaptcha(String phone);
+    ResponseEntity<String> sendCaptcha(String phone,String scenes);
+
+
+    /**
+     * @param studentId
+     */
+    void logout(String studentId);
 
 }

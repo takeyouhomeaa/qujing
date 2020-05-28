@@ -2,6 +2,7 @@ package edu.fzu.qujing.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import edu.fzu.qujing.bean.User;
+import edu.fzu.qujing.config.shiro.PhoneToken;
 import edu.fzu.qujing.mapper.UserMapper;
 import edu.fzu.qujing.service.AuthenticatedService;
 import edu.fzu.qujing.service.UserService;
@@ -53,19 +54,7 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
         return null;
     }
 
-    /**
-     * 用户登录
-     *
-     * @param username 账号
-     * @param password 密码
-     * @throws AuthenticationException 权限异常
-     */
-    @Override
-    public ResponseEntity<String> loginByStudentId(String username, String password,
-                                        HttpServletResponse response){
-        Subject subject = SecurityUtils.getSubject();
-        UsernamePasswordToken token  = new UsernamePasswordToken(username,password);
-        User userToCheck = userService.getUserToCheckByStudentId(username);
+    private ResponseEntity<String> getStringResponseEntity(HttpServletResponse response, Subject subject, AuthenticationToken token, User userToCheck) {
         ResponseEntity<String> status = checkAccountStatus(userToCheck);
         if(status != null ) {
             return status;
@@ -79,10 +68,29 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
         return ResponseEntity.ok("success");
     }
 
+    /**
+     * 用户登录
+     *
+     * @param username 账号
+     * @param password 密码
+     * @throws AuthenticationException 权限异常
+     */
+    @Override
+    public ResponseEntity<String> loginByStudentId(String username, String password,
+                                        HttpServletResponse response){
+        Subject subject = SecurityUtils.getSubject();
+        UsernamePasswordToken token  = new UsernamePasswordToken(username,password);
+        User userToCheck = userService.getUserToCheckByStudentId(username);
+        return getStringResponseEntity(response, subject, token, userToCheck);
+    }
+
 
     @Override
     public ResponseEntity<String> loginByPhone(String phone, String password, HttpServletResponse response) {
-        return null;
+        Subject subject = SecurityUtils.getSubject();
+        PhoneToken token  = new PhoneToken(phone,password);
+        User userToCheck = userService.getUserToCheckByPhone(phone);
+        return getStringResponseEntity(response, subject, token, userToCheck);
     }
 
     /**
@@ -93,7 +101,7 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
      */
     @Override
     public boolean activeUser(String phone,String check) {
-        String key = "code::" + phone;
+        String key = "register::" + phone;
         String key2 = "toBeActivated::" + phone;
         if(RedisUtil.hasKey(key)) {
             Object rs = RedisUtil.get(key);
@@ -119,9 +127,10 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
     }
 
     @Override
-    public ResponseEntity<String> sendCaptcha(String phone) {
-        String key = "code::" + phone;
+    public ResponseEntity<String> sendCaptcha(String phone,String scenes) {
+        String key = scenes + "::" + phone;
         String code = PhoneUtil.getCode();
+        System.out.println(code);
         boolean flag = PhoneUtil.send(phone, code);
         if(flag) {
             RedisUtil.set(key, code,60 * 5);
@@ -131,14 +140,31 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
         return ResponseEntity.ok("Captcha has been sent");
     }
 
-
+    @Override
     @CacheEvict(cacheNames = "user",key = "'getUserToCheckByStudentId(' + #studentId + ')'")
     public void logout(String studentId){}
 
 
     @Override
-    public boolean verifyCaptcha(String check,String phone) {
-        String key = "code::" + phone;
+    public boolean verifyCaptchaToRegister(String check,String phone) {
+        String key = "register::" + phone;
+        return verifyCaptcha(check, key);
+    }
+
+    @Override
+    public boolean verifyCaptchaToForgetPwd(String check, String phone) {
+        String key = "forgetPwd::" + phone;
+        RedisUtil.set("forgetPwd::flag", "true",120);
+        return verifyCaptcha(check, key);
+    }
+
+    @Override
+    public boolean verifyCaptchaToLogin(String check, String phone) {
+        String key = "login::" + phone;
+        return verifyCaptcha(check, key);
+    }
+
+    private boolean verifyCaptcha(String check, String key) {
         if(RedisUtil.hasKey(key)){
             Object rs = RedisUtil.get(key);
             String code = (String)rs;

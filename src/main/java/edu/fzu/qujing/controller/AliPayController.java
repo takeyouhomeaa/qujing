@@ -60,7 +60,6 @@ public class AliPayController {
             String out_trade_no = request.getParameter("out_trade_no");
             Object rs = RedisUtil.get(out_trade_no);
             String username = (String) rs;
-            RedisUtil.del(out_trade_no);
             String total_amount = request.getParameter("total_amount");
             Integer amount = Double.valueOf(total_amount).intValue();
             System.out.println(amount);

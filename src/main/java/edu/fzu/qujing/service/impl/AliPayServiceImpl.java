@@ -71,7 +71,7 @@ public class AliPayServiceImpl implements PayService {
         try {
             AlipayTradePagePayResponse response = alipayClient.pageExecute(request);
             if (response.isSuccess()) {
-                RedisUtil.set(out_trade_no, body);
+                RedisUtil.set(out_trade_no, body,60);
                 form = response.getBody();
             } else {
                 System.out.println("调用失败:" + response.getSubMsg());

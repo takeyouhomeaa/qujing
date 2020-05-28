@@ -51,6 +51,27 @@ public class AuthenticatedController {
     }
 
 
+    @ApiOperation(value = "用户登录接口", notes = "Json方式登录,登录需要从header中获取JwtToken")
+    @ApiImplicitParams({
+            @ApiImplicitParam(value = "用户名:学号或邮箱",name = "username",dataType = "string",required = true),
+            @ApiImplicitParam(value = "密码",name = "password",dataType = "string",required = true)})
+    @ApiResponses({
+            @ApiResponse(code = 200,message = "success"),
+            @ApiResponse(code = 401,message = "Username or password incorrect"),
+            @ApiResponse(code = 403,message = "Account is frozen to 封禁时间",
+                    examples = @Example({@ExampleProperty(value = "Account is frozen to 2020-07-02 17:24:25")})),
+            @ApiResponse(code = 404,message = "Account does not exist")
+    })
+    @ResponseHeader(name="Authorization",description="获取JwtToken")
+    @PostMapping("/loginByPhone")
+    public ResponseEntity<String> loginByPhone(@ApiIgnore @RequestBody Map<String,String> map,
+                                                   @ApiIgnore HttpServletResponse response)  {
+        ResponseEntity<String> status =
+                authenticatedService.loginByPhone(map.get("phone"),map.get("check"),response);
+        return status;
+    }
+
+
 
     @ApiOperation(value = "用户注册接口", notes = "Json方式注册")
     @ApiImplicitParams({
@@ -68,17 +89,52 @@ public class AuthenticatedController {
     }
 
 
-    @ApiOperation(value = "验证码发送接口", notes = "Json方式注册")
+    @ApiOperation(value = "验证码发送接口,用于用户注册", notes = "Json方式注册")
     @ApiImplicitParams({
             @ApiImplicitParam(value = "手机号",name = "phone",dataType = "string",required = true),
-            @ApiImplicitParam(value = "学号",name = "studentId",dataType = "string",required = true),
-            @ApiImplicitParam(value = "昵称",name = "username",dataType = "string",required = true),
-            @ApiImplicitParam(value = "密码",name = "password",dataType = "string",required = true)})
-    @PostMapping("/sendCaptcha")
-    public ResponseEntity<String> sendCaptcha(@ApiIgnore @RequestBody Map<String,String> map) {
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200,message = "Captcha has been sent"),
+            @ApiResponse(code = 500,message = "SMS server is busy"),
+    })
+    @PostMapping("/sendCaptcha/register")
+    public ResponseEntity<String> sendCaptchaToRegister(@ApiIgnore @RequestBody Map<String,String> map) {
         String phone = map.get("phone");
-        return authenticatedService.sendCaptcha(phone);
+        return authenticatedService.sendCaptcha(phone,"register");
     }
+
+
+
+    @ApiOperation(value = "验证码发送接口,用于忘记密码", notes = "Json方式注册")
+    @ApiImplicitParams({
+            @ApiImplicitParam(value = "手机号",name = "phone",dataType = "string",required = true),
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200,message = "Captcha has been sent"),
+            @ApiResponse(code = 500,message = "SMS server is busy"),
+    })
+    @PostMapping("/sendCaptcha/forgetPwd")
+    public ResponseEntity<String> sendCaptchaToForgetPwd(@ApiIgnore @RequestBody Map<String,String> map) {
+        String phone = map.get("phone");
+        return authenticatedService.sendCaptcha(phone,"forgetPwd");
+    }
+
+
+
+    @ApiOperation(value = "验证码发送接口,用于登录", notes = "Json方式注册")
+    @ApiImplicitParams({
+            @ApiImplicitParam(value = "手机号",name = "phone",dataType = "string",required = true),
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200,message = "Captcha has been sent"),
+            @ApiResponse(code = 500,message = "SMS server is busy"),
+    })
+    @PostMapping("/sendCaptcha/login")
+    public ResponseEntity<String> sendCaptchaToLogin(@ApiIgnore @RequestBody Map<String,String> map) {
+        String phone = map.get("phone");
+        return authenticatedService.sendCaptcha(phone,"login");
+    }
+
 
 
 
@@ -104,7 +160,8 @@ public class AuthenticatedController {
 
     @ApiOperation(value = "用户退出登录接口", notes = "请在退出登录事件发生时将heaer中的jwtToken 清除")
     @GetMapping("/logout")
-    public ResponseEntity<String> logout() {
+    public ResponseEntity<String> logout(@ApiIgnore HttpServletRequest request) {
+        authenticatedService.logout(JwtUtil.getSubject(request));
         return ResponseEntity.ok("Logout");
     }
 
@@ -117,7 +174,7 @@ public class AuthenticatedController {
     })
     @ApiResponses({
             @ApiResponse(code = 200, message = "Modified success"),
-            @ApiResponse(code = 403, message = "The old password does not match")
+            @ApiResponse(code = 403, message = "No permission to change password")
     })
     @PutMapping("/forgetPwd")
     public ResponseEntity<String> forgetPassword(@ApiIgnore @RequestBody Map<String,String> map) {
@@ -126,13 +183,13 @@ public class AuthenticatedController {
             return ResponseEntity.ok("Modified success");
         }
 
-        return ResponseEntity.status(403).body("Modified success");
+        return ResponseEntity.status(403).body("No permission to change password");
     }
 
 
 
 
-    @ApiOperation(value = "验证验证码接口")
+    @ApiOperation(value = "验证验证码接口,用于用户注册")
     @ApiImplicitParams({
             @ApiImplicitParam(value = "手机号", name = "phone", dataType = "string", required = true),
             @ApiImplicitParam(value = "验证码", name = "check", dataType = "string", required = true)
@@ -141,9 +198,29 @@ public class AuthenticatedController {
             @ApiResponse(code = 200, message = "true"),
             @ApiResponse(code = 404, message = "false")
     })
-    @GetMapping("/verifyCaptcha")
-    public ResponseEntity<String> verifyCaptcha(@ApiIgnore @RequestBody Map<String,String> map) {
-        if(authenticatedService.verifyCaptcha(map.get("check"), map.get("phone"))){
+    @GetMapping("/verifyCaptcha/register")
+    public ResponseEntity<String> verifyCaptchaToRegister(@ApiIgnore @RequestBody Map<String,String> map) {
+        if(authenticatedService.verifyCaptchaToRegister(map.get("check"), map.get("phone"))){
+            return ResponseEntity.ok("true");
+        }
+        return ResponseEntity.status(404).body("false");
+    }
+
+
+
+
+    @ApiOperation(value = "验证验证码接口,用于忘记密码")
+    @ApiImplicitParams({
+            @ApiImplicitParam(value = "手机号", name = "phone", dataType = "string", required = true),
+            @ApiImplicitParam(value = "验证码", name = "check", dataType = "string", required = true)
+    })
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "true"),
+            @ApiResponse(code = 404, message = "false")
+    })
+    @GetMapping("/verifyCaptcha/forgetPwd")
+    public ResponseEntity<String> verifyCaptchaToForgetPwd(@ApiIgnore @RequestBody Map<String,String> map) {
+        if(authenticatedService.verifyCaptchaToForgetPwd(map.get("check"), map.get("phone"))){
             return ResponseEntity.ok("true");
         }
         return ResponseEntity.status(404).body("false");

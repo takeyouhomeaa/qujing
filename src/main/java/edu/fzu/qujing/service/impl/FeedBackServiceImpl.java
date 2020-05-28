@@ -6,9 +6,13 @@ import edu.fzu.qujing.service.FeedBackService;
 import edu.fzu.qujing.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 
+@Service
+@Transactional(rollbackFor = Exception.class)
 public class FeedBackServiceImpl implements FeedBackService {
 
     @Autowired

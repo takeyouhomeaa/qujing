@@ -8,7 +8,7 @@ import edu.fzu.qujing.bean.User;
 import edu.fzu.qujing.mapper.TaskMapper;
 import edu.fzu.qujing.service.CancelTaskService;
 import edu.fzu.qujing.service.TaskService;
-import edu.fzu.qujing.util.AuthorityUtil;
+import edu.fzu.qujing.service.UserService;
 import edu.fzu.qujing.util.DelayQueueUtil;
 import edu.fzu.qujing.util.PageUtil;
 import edu.fzu.qujing.util.RedisUtil;
@@ -35,6 +35,9 @@ public class TaskServiceImpl implements TaskService {
 
     @Autowired
     CancelTaskService cancelTaskService;
+
+    @Autowired
+    UserService userService;
 
     /**
      * 查询未有人接受的任务
@@ -83,19 +86,20 @@ public class TaskServiceImpl implements TaskService {
             }
     )
     public Task postTask(Map<String,String> map) {
+        String studentId = map.get("studentId");
         Task task = new Task();
         task.setName(map.get("name"));
         task.setContent(map.get("content"));
         task.setState(1);
         task.setPoints(Integer.valueOf(map.get("points")));
-        task.setSenderid(map.get("studentId"));
+        task.setSenderid(studentId);
         task.setTtid(Integer.valueOf(map.get("ttid")));
         Date date = new Date(System.currentTimeMillis() + Long.parseLong(map.get("ttl")) * 60000);
         task.setDeadline(date);
         task.setExpedited(Integer.valueOf(map.get("expedited")));
         taskMapper.insert(task);
         Integer id = task.getId();
-        DelayQueueUtil.addDelayTaskToCancel(new DelayTask(id,AuthorityUtil.getPrincipal(),1000 * 60 * 10));
+        DelayQueueUtil.addDelayTaskToCancel(new DelayTask(id,studentId,1000 * 60 * 10));
         return task;
     }
 
@@ -116,7 +120,7 @@ public class TaskServiceImpl implements TaskService {
      * @return
      */
     @Caching(
-            put = @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null"),
+            put = @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null or #result.id == null"),
             evict = {
                     @CacheEvict(key = "'listUnacceptedTask(*)'"),
                     @CacheEvict(key = "'listAccept(*)'")
@@ -124,13 +128,20 @@ public class TaskServiceImpl implements TaskService {
     )
     @Override
     public Task acceptTask(Integer id,String studentId) {
+        User user = userService.getReceiveTaskNumber(studentId);
+        if(user.getReceiveTaskNumber() == 3) {
+            return new Task();
+        }
+
         Task task = taskMapper.selectById(id);
         if(task.getState() == 1){
             task.setState(2);
             task.setReceiverid(studentId);
             taskMapper.updateById(task);
+            userService.updateReceiveTaskNumber(studentId, 1);
             return task;
         }
+
         return null;
     }
 

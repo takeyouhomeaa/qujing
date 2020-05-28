@@ -261,10 +261,4 @@ public class UserServiceImpl implements UserService {
     }
 
 
-    public static void main(String[] args) {
-        ByteSource credentialsSalt = ByteSource.Util.bytes("221701206");
-        String newPassword = new SimpleHash("MD5", "123456abc",
-                credentialsSalt, 1024).toBase64();
-        System.out.println(newPassword);
-    }
 }

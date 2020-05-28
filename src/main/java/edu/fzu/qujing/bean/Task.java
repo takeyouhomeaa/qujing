@@ -21,7 +21,7 @@ public class Task implements Serializable {
 
     @ApiModelProperty("ID")
     @TableId(type = IdType.AUTO)
-    private int id;
+    private Integer id;
 
     @ApiModelProperty("任务名")
     private String name;

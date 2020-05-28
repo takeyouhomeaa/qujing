@@ -43,5 +43,27 @@
         WHERE id = #{id}
     </select>
 
+    <select id="listFeedBackTpe" resultType="edu.fzu.qujing.bean.Type">
+        SELECT id,type
+        FROM feedbacktype
+    </select>
+
+    <select id="listSuitType" resultType="edu.fzu.qujing.bean.Type">
+        SELECT id,type
+        FROM suittype
+    </select>
+
+    <select id="getFeedBackTpe" resultType="edu.fzu.qujing.bean.Type">
+        SELECT id,type
+        FROM feedbacktype
+        WHERE id = #{id}
+    </select>
+
+    <select id="getSuitType" resultType="edu.fzu.qujing.bean.Type">
+        SELECT id,type
+        FROM suittype
+        WHERE id = #{id}
+    </select>
+
 
 </mapper>

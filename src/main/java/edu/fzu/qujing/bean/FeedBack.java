@@ -18,13 +18,13 @@ import java.util.Date;
 public class FeedBack implements Serializable {
     @TableId(type = IdType.AUTO)
     @ApiModelProperty("主键")
-    private int id;
+    private Integer id;
 
     @ApiModelProperty("反馈内容")
     private String content;
 
     @ApiModelProperty("任务ID")
-    private Task task;
+    private Integer task;
 
     @ApiModelProperty("创建时间")
     @TableField(fill = FieldFill.INSERT)

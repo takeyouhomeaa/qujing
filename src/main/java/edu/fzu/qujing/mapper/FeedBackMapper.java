@@ -1,5 +1,6 @@
 package edu.fzu.qujing.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import edu.fzu.qujing.bean.FeedBack;
 
 
@@ -7,19 +8,6 @@ import edu.fzu.qujing.bean.FeedBack;
  * @version 1.0
  */
 
-public interface FeedBackMapper {
-    /**
-     * 查询数量
-     *
-     * @return 条数
-     */
-    public Integer getCount();
-
-    /**
-     * 添加一条feedback数据
-     *
-     * @param feedBack FeedBack数据
-     */
-    public void addFeedBack(FeedBack feedBack);
+public interface FeedBackMapper extends BaseMapper<FeedBack> {
 
 }

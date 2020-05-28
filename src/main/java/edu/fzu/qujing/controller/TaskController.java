@@ -2,7 +2,6 @@ package edu.fzu.qujing.controller;
 
 import edu.fzu.qujing.bean.Task;
 import edu.fzu.qujing.service.TaskService;
-import edu.fzu.qujing.util.AuthorityUtil;
 import edu.fzu.qujing.util.JwtUtil;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,11 +77,9 @@ public class TaskController {
             @ApiImplicitParam(value = "取消理由", name = "content", dataType = "string", required = true),
             @ApiImplicitParam(value = "取消类型", name = "type", dataType = "string", required = true)
     })
-
     @ApiResponses({
             @ApiResponse(code = 200, message = "Cancel success"),
     })
-
     @DeleteMapping("/receiver/cancel/{id}")
     public ResponseEntity<String> receiverCancleTask(@ApiIgnore @PathVariable("id") Integer id,
                                                      @ApiIgnore @RequestBody Map<String, String> map,
@@ -98,11 +95,9 @@ public class TaskController {
 
 
     @ApiOperation(value = "接受者完成任务接口", notes = "URL传递id")
-
     @ApiResponses({
             @ApiResponse(code = 200, message = "Accomplish success"),
     })
-
     @PutMapping("/receiver/accomplish/{id}")
     public ResponseEntity<String> receiverAccomplishTask(@ApiIgnore @PathVariable Integer id,
                                                          @ApiIgnore HttpServletRequest request) {
@@ -115,11 +110,9 @@ public class TaskController {
 
 
     @ApiOperation(value = "雇主确认任务完成接口", notes = "URL传递id")
-
     @ApiResponses({
             @ApiResponse(code = 200, message = "Confirm success"),
     })
-
     @PutMapping("/sender/confirm/{id}")
     public ResponseEntity<String> senderAccomplishTask(@ApiIgnore @PathVariable Integer id,
                                                        @ApiIgnore HttpServletRequest request) {
@@ -128,15 +121,19 @@ public class TaskController {
         return ResponseEntity.ok("Confirm success");
     }
 
-    @ApiOperation(value = "获取未被接受的任务列表", notes = "URL传递pos,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
 
+
+
+    @ApiOperation(value = "获取未被接受的任务列表", notes = "URL传递pos,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
     @GetMapping("/listUnacceptedTask/{pos}")
     public List<Task> listUnacceptedTask(@ApiIgnore @PathVariable("pos") Integer pos) {
         return taskService.listUnacceptedTask(pos);
     }
 
-    @ApiOperation(value = "获取当前用户接受的任务列表", notes = "URL传递pos,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
 
+
+
+    @ApiOperation(value = "获取当前用户接受的任务列表", notes = "URL传递pos,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
     @GetMapping("/listAccept/{pos}")
     public List<Task> listAccept(@ApiIgnore @PathVariable("pos") Integer pos,
                                  @ApiIgnore HttpServletRequest request) {
@@ -144,8 +141,10 @@ public class TaskController {
         return taskService.listAccept(subject, pos);
     }
 
-    @ApiOperation(value = "获取当前用户发布的任务列表", notes = "URL传递pos,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
 
+
+
+    @ApiOperation(value = "获取当前用户发布的任务列表", notes = "URL传递pos,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
     @GetMapping("/listPublish/{pos}")
     public List<Task> listPublish(@PathVariable("pos") Integer pos,
                                   @ApiIgnore HttpServletRequest request) {
@@ -153,26 +152,33 @@ public class TaskController {
         return taskService.listPublish(subject, pos);
     }
 
-    @ApiOperation(value = "获当前用户接受的任务列表", notes = "URL传递id,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
 
+
+
+    @ApiOperation(value = "获当前用户接受的任务列表", notes = "URL传递id,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
     @GetMapping("/getDetailTask/{id}")
     public Task getDetailTask(@ApiIgnore @PathVariable("id") Integer id) {
         return taskService.getDetailTask(id);
     }
 
-    @ApiOperation(value = "接受任务接口", notes = "URL传递id,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
 
+
+
+    @ApiOperation(value = "接受任务接口", notes = "URL传递id,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Accept success"),
+            @ApiResponse(code = 403, message = "Acceptable tasks are full"),
             @ApiResponse(code = 400, message = "Task accepted by others"),
     })
-
     @PutMapping("/acceptTask/{id}")
     public ResponseEntity<String> acceptTask(@ApiIgnore @PathVariable("id") Integer id,
                                              @ApiIgnore HttpServletRequest request) {
         String subject = JwtUtil.getSubject(request);
         Task task = taskService.acceptTask(id, subject);
         if(task != null) {
+            if(task.getId() == null) {
+                return ResponseEntity.status(403).body("Acceptable tasks are full");
+            }
             return ResponseEntity.ok("Accept success");
         }
         return ResponseEntity.badRequest().body("Task accepted by others");

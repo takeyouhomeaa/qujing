@@ -87,4 +87,51 @@ public class TypeServiceImpl implements TypeService {
     public Type getExpensesType(Integer id) {
         return typeMapper.getExpensesType(id);
     }
+
+
+    /**
+     * 获得欺诈反馈类型列表
+     *
+     * @return
+     */
+    @Override
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
+    public List<Type> listFeedBackTpe() {
+        return typeMapper.listFeedBackTpe();
+    }
+
+    /**
+     * 获得举报类型列表
+     *
+     * @return
+     */
+    @Override
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
+    public List<Type> listSuitType() {
+        return typeMapper.listSuitType();
+    }
+
+    /**
+     * 通过类型id获取欺诈反馈类型
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
+    public Type getFeedBackTpe(Integer id) {
+        return typeMapper.getFeedBackTpe(id);
+    }
+
+    /**
+     * 通过类型id获得举报类型
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
+    public Type getSuitType(Integer id) {
+        return typeMapper.getSuitType(id);
+    }
 }

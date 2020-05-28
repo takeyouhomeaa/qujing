@@ -17,7 +17,7 @@ public class CancelTask implements Serializable {
 
     @TableId(type = IdType.AUTO)
     @ApiModelProperty("主键")
-    private int id;
+    private Integer id;
 
     @ApiModelProperty("取消任务理由")
     private String content;

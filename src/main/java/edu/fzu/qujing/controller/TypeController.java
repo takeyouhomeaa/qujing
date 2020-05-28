@@ -54,6 +54,8 @@ public class TypeController {
     }
 
 
+
+
     @ApiOperation(value = "获取消费类型接口")
     @GetMapping("/listExpensesType")
     public List<Type> listExpensesType() {
@@ -61,9 +63,39 @@ public class TypeController {
     }
 
 
-    @ApiOperation(value = "通过id获取消费类型接口",notes = "通过URL传递id")
-    @GetMapping("/getExpensesType/{id}")
-    public Type getExpensesType(@ApiIgnore @PathVariable("id") Integer id) {
-        return typeService.getExpensesType(id);
+
+
+    @ApiOperation(value = "通过类型id获取欺诈反馈类型",notes = "通过URL传递id")
+    @GetMapping("/getFeedBackTpe/{id}")
+    public Type getFeedBackTpe(@ApiIgnore @PathVariable("id") Integer id) {
+        return typeService.getFeedBackTpe(id);
     }
+
+
+
+
+    @ApiOperation(value = "通过类型id获得举报类型",notes = "通过URL传递id")
+    @GetMapping("/getSuitType/{id}")
+    public Type getSuitType(@ApiIgnore @PathVariable("id") Integer id) {
+        return typeService.getSuitType(id);
+    }
+
+
+
+
+    @ApiOperation(value = "获得欺诈反馈类型列表")
+    @GetMapping("/listFeedBackTpe")
+    public List<Type> listFeedBackTpe() {
+        return typeService.listFeedBackTpe();
+    }
+
+
+
+    @ApiOperation(value = "获得举报类型列表")
+    @GetMapping("/listSuitType")
+    public List<Type> listSuitType() {
+        return typeService.listSuitType();
+    }
+
+
 }

@@ -20,7 +20,7 @@ public class Message implements Serializable {
 
     @TableId(type = IdType.AUTO)
     @ApiModelProperty("主键")
-    private int id;
+    private Integer id;
 
     @ApiModelProperty("消息的详细内容")
     private String content;

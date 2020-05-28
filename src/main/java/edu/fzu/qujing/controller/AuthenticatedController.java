@@ -3,7 +3,6 @@ package edu.fzu.qujing.controller;
 import edu.fzu.qujing.bean.User;
 import edu.fzu.qujing.service.AuthenticatedService;
 import edu.fzu.qujing.service.UserService;
-import edu.fzu.qujing.util.AuthorityUtil;
 import edu.fzu.qujing.util.JwtUtil;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;

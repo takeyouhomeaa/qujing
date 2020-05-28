@@ -54,7 +54,6 @@ public class AliPayController {
     @ApiIgnore
     @RequestMapping("/return_url")
     public String return_url(HttpServletRequest request) throws IOException, AlipayApiException {
-        AuthorityUtil.removePrincipal();
         boolean verifyResult = AliPayUtil.rsaCheckV1(request);
         ModelAndView mv = null;
         if (verifyResult) {

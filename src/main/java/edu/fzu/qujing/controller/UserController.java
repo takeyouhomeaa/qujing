@@ -75,4 +75,12 @@ public class UserController {
     }
 
 
+
+    @ApiOperation(value = "获取用户积分")
+    @GetMapping("/getUserPoints")
+    public User getUserPoints(@ApiIgnore HttpServletRequest request) {
+        return userService.getUserPoints(JwtUtil.getSubject(request));
+    }
+
+
 }

@@ -87,11 +87,20 @@ public class TaskServiceImpl implements TaskService {
     )
     public Task postTask(Map<String,String> map) {
         String studentId = map.get("studentId");
+        Integer points = Integer.valueOf(map.get("points"));
+        User user = userService.getUserPoints(studentId);
+        Integer userPoints = user.getPoints();
+        if(points > userPoints ) {
+            return null;
+        }
+        user.setPoints(userPoints - points);
+        userService.updatePoints(user);
+
         Task task = new Task();
         task.setName(map.get("name"));
         task.setContent(map.get("content"));
         task.setState(1);
-        task.setPoints(Integer.valueOf(map.get("points")));
+        task.setPoints(points);
         task.setSenderid(studentId);
         task.setTtid(Integer.valueOf(map.get("ttid")));
         Date date = new Date(System.currentTimeMillis() + Long.parseLong(map.get("ttl")) * 60000);
@@ -99,6 +108,8 @@ public class TaskServiceImpl implements TaskService {
         task.setExpedited(Integer.valueOf(map.get("expedited")));
         taskMapper.insert(task);
         Integer id = task.getId();
+
+
         DelayQueueUtil.addDelayTaskToCancel(new DelayTask(id,studentId,1000 * 60 * 10));
         return task;
     }
@@ -189,8 +200,11 @@ public class TaskServiceImpl implements TaskService {
     )
     @Override
     public Task cancelTaskToEmployee(Integer id,String studentId ,String content, String type) {
+        Task task = updateState(id, 4);
+        User user = userService.getUserPoints(task.getSenderid());
+        user.setPoints(task.getPoints() + user.getPoints());
         cancelTaskService.save(id, content, type);
-        return updateState(id,4);
+        return task;
     }
 
 
@@ -231,10 +245,14 @@ public class TaskServiceImpl implements TaskService {
     )
     @Override
     public Task confirmTaskToEmployer(Integer id,String studentId) {
+        Task task = updateState(id,6);
+        User user = userService.getUserPoints(task.getReceiverid());
+        user.setPoints(task.getPoints() + user.getPoints());
+
         DelayTask delayTask = new DelayTask();
         delayTask.setId(id);
         DelayQueueUtil.removeDelayTaskToConfirm(delayTask);
-        return updateState(id,6);
+        return task;
     }
 
 
@@ -295,6 +313,9 @@ public class TaskServiceImpl implements TaskService {
             DelayTask delayTask = DelayQueueUtil.getDelayTaskToCancel();
             Integer id = delayTask.getId();
             Task task = updateState(id, 3);
+            User user = userService.getUserPoints(task.getSenderid());
+            user.setPoints(task.getPoints() + user.getPoints());
+
             taskResolve(delayTask,task);
             log.info("taskWasNotTaken 自动取消任务");
         };
@@ -314,6 +335,9 @@ public class TaskServiceImpl implements TaskService {
                 DelayTask delayTask = DelayQueueUtil.getDelayTaskToConfirm();
                 Integer id = delayTask.getId();
                 Task task = updateState(id,6);
+                User user = userService.getUserPoints(task.getReceiverid());
+                user.setPoints(task.getPoints() + user.getPoints());
+
                 taskResolve(delayTask,task);
                 log.info("autoTaskConfirm 自动确认任务");
             }

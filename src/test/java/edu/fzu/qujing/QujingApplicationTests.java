@@ -39,9 +39,5 @@ class QujingApplicationTests {
     }
 
 
-    @test(description = "1111")
-    public void test() {
-
-    }
 
 }

@@ -15,6 +15,9 @@ public interface UserMapper extends BaseMapper<User> {
      */
     User getUserToCheck(User user);
 
+
+    User getDetailUser(User user);
+
     /**
      * @param user
      */

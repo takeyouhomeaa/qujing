@@ -26,7 +26,6 @@ public class SuitServiceImpl implements SuitService {
     UserService userService;
 
     @Override
-    @CachePut(key = "#root.methodName + '(' + #result.task + ')'",unless = "#result == null")
     public Suit save(String studentId,Map<String, String> params) {
         Suit suit = new Suit();
         suit.setContent(params.get("content"));

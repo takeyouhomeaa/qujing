@@ -34,6 +34,7 @@ public class TaskController {
 
     @ApiResponses({
             @ApiResponse(code = 200, message = "Post success"),
+            @ApiResponse(code = 403,message = "points are not enough")
     })
 
 
@@ -41,7 +42,10 @@ public class TaskController {
     public ResponseEntity<String> postTask(@ApiIgnore HttpServletRequest request,
                                            @ApiIgnore @RequestBody Map<String, String> map) {
         map.put("studentId",JwtUtil.getSubject(request));
-        taskService.postTask(map);
+        Task task = taskService.postTask(map);
+        if(task == null){
+            return ResponseEntity.status(403).body("points are not enough");
+        }
         return ResponseEntity.ok("Post success");
     }
 

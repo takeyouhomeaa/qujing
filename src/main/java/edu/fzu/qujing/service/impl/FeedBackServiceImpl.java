@@ -23,7 +23,6 @@ public class FeedBackServiceImpl implements FeedBackService {
     UserService userService;
 
     @Override
-    @CachePut(key = "#root.methodName + '(' + #result.task + ')'",unless = "#result == null")
     public FeedBack save(String studentId, Map<String, String> params) {
         FeedBack feedBack = new FeedBack();
         feedBack.setContent(params.get("content"));

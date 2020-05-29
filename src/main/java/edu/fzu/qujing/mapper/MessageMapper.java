@@ -1,41 +1,18 @@
 package edu.fzu.qujing.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import edu.fzu.qujing.bean.Message;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-public interface MessageMapper {
-    /**
-     * 查询接收者数据条数
-     *
-     * @param receiveId 学号
-     * @return 数据条数
-     */
-    public Integer getCountToReceiveId(@Param("receiveId") String receiveId);
+public interface MessageMapper extends BaseMapper<Message> {
 
-    /**
-     * 查询发布者数据条数
-     *
-     * @param publisherId 学号
-     * @return 数据条数
-     */
-    public Integer getCountToPublisherId(@Param("publisherId") String publisherId);
+    IPage<Message> listMessageByStudentId(@Param("publisherId") String publisherId,
+                                 @Param("receiveId") String receiveId,
+                                 @Param("page") Page<Message> page);
 
-    /**
-     * 添加Message数据
-     *
-     * @param message Message数据
-     */
-    public void addMessage(Message message);
 
-    /**
-     * 按条件查询分页Message
-     *
-     * @param message 查询条件
-     * @return Message列表
-     */
-    public List<Message> listMessage(@Param("message") Message message,
-                                     @Param("pos") Integer pos,
-                                     @Param("pages") Integer pages);
 }

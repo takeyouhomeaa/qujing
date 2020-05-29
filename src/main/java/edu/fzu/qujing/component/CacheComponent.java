@@ -17,7 +17,7 @@ public class CacheComponent implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         delayiTaskIit();
-        //RedisUtil.flushdb();
+        RedisUtil.flushdb();
     }
 
     private void delayiTaskIit() {

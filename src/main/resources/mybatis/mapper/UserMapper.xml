@@ -62,14 +62,6 @@
         </where>
     </select>
 
-
-
-
-
-
-
-
-
     <select id="getUserPoints" resultType="edu.fzu.qujing.bean.User">
         SELECT id,points,version
         FROM user
@@ -92,6 +84,12 @@
 
     <select id="getStudentId" resultType="edu.fzu.qujing.bean.User">
         SELECT id,studentId
+        FROM user
+        WHERE studentId = #{studentId}
+    </select>
+
+    <select id="getDetailUser" resultType="edu.fzu.qujing.bean.User">
+        SELECT id,username,points,content,receiveTaskNumber,maliciousAcceptanceNumber,reportedNumber,version
         FROM user
         WHERE studentId = #{studentId}
     </select>

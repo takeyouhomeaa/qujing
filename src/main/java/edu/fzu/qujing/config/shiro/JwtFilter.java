@@ -34,14 +34,6 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
         return super.preHandle(request, response);
     }
 
-    /**
-     * 后置处理
-     */
-    @Override
-    protected void postHandle(ServletRequest request, ServletResponse response) {
-        // 添加跨域支持
-        this.fillCorsHeader(WebUtils.toHttp(request), WebUtils.toHttp(response));
-    }
 
 
     /**
@@ -173,11 +165,6 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
         return super.onLoginFailure(token, e, request, response);
     }
 
-    protected void fillCorsHeader(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
-        httpServletResponse.setHeader("Access-control-Allow-Origin", httpServletRequest.getHeader("Origin"));
-        httpServletResponse.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS,HEAD");
-        httpServletResponse.setHeader("Access-Control-Allow-Headers",
-                httpServletRequest.getHeader("Access-Control-Request-Headers"));
-    }
+
 
 }

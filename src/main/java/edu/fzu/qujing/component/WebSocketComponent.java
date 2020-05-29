@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Component
-@ServerEndpoint("/webSocket/{sid}")
+@ServerEndpoint("/webSocket/{studentId}")
 public class WebSocketComponent {
     @Autowired
     //MessageService messageService;
@@ -32,7 +32,7 @@ public class WebSocketComponent {
     //静态变量，用来记录当前在线连接数
     private static AtomicInteger onlineNum = new AtomicInteger();
 
-    //用来存放每个客户端对应的WebSocketServer对象
+    //用来存放每个客户端对应的WebSocketComponent对象
     private static ConcurrentHashMap<String, WebSocketComponent> webSocketMap = new ConcurrentHashMap<>();
 
     private Session session;
@@ -64,7 +64,7 @@ public class WebSocketComponent {
     }
 
     @OnOpen
-    public void onOpen(Session session, @PathParam("stduentId") String studentId) {
+    public void onOpen(Session session, @PathParam("studentId") String studentId) {
         log.info("webSocket连接开启");
         this.session = session;
         this.studentId = studentId;
@@ -90,7 +90,7 @@ public class WebSocketComponent {
         log.info("用户消息:{} ", studentId);
         log.info("报文{} ", message);
         if (!StringUtils.isEmpty(message)) {
-            Message message1 = new Message();
+            Message msg = new Message();
             JSONObject jsonObject = JSON.parseObject(message);
             jsonObject.put("fromUserId", this.studentId);
 

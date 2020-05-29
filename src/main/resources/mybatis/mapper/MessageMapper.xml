@@ -62,4 +62,30 @@
         FROM message
         WHERE publisherId = #{publisherId}
     </select>
+
+
+    <select id="listMessageByStudentId" resultMap="message">
+        SELECT
+        id,
+        content,
+        messageState,
+        messageType,
+        receiveId,
+        publisherId,
+        time,
+        version
+        FROM message
+        <where>
+            <choose>
+                <when test="receiveId != null and receiveId != ''">
+                    receiveId = #{receiveId}
+                </when>
+                <when test="publisherId != null and publisherId != ''">
+                    publisherId = #{publisherId}
+                </when>
+            </choose>
+        </where>
+    </select>
+
+
 </mapper>

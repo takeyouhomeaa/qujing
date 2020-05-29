@@ -62,6 +62,7 @@ public class ShiroConfig {
         map.put("/v2/**", "anon");
         map.put("/webjars/**", "anon");
         map.put("/configuration/**", "anon");
+        map.put("/webSocket/**","anon");
         map.put("/authenticated/logout", "logout");
         map.put("/**","jwtFilter,authc");
         bean.setFilterChainDefinitionMap(map);

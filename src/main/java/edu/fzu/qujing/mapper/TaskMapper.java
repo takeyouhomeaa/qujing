@@ -33,7 +33,9 @@ public interface TaskMapper extends BaseMapper<Task> {
      * @param state
      * @return
      */
-    IPage<Task> listSimpleTask(Page<Task> page,@Param("state") Integer state);
+    IPage<Task> listTask(Page<Task> page,@Param("state") Integer state);
+
+
 
     /**
      * 通过学号查找不同状态,接收/发布的任务

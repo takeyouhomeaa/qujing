@@ -5,61 +5,71 @@
 
 <!-- 使用接口 代理的方式 namespace必须和接口的全路径名称一致 -->
 <mapper namespace="edu.fzu.qujing.mapper.TypeMapper">
-    <select id="listUserState" resultType="edu.fzu.qujing.bean.Type">
+    <resultMap id="type1" type="edu.fzu.qujing.bean.Type">
+        <id property="id" column="id"></id>
+        <result property="name" column="name"></result>
+    </resultMap>
+
+      <resultMap id="type2" type="edu.fzu.qujing.bean.Type">
+        <id property="id" column="id"></id>
+        <result property="name" column="type"></result>
+    </resultMap>
+
+    <select id="listUserState" resultMap="type1">
         SELECT id,name
         FROM userState
     </select>
 
-    <select id="listTaskType" resultType="edu.fzu.qujing.bean.Type">
+    <select id="listTaskType" resultMap="type1">
         SELECT id,name
         FROM tasktype
     </select>
 
-    <select id="listTaskState" resultType="edu.fzu.qujing.bean.Type">
+    <select id="listTaskState" resultMap="type1">
         SELECT id,name
         FROM taskstate
     </select>
 
-    <select id="getTakeState" resultType="edu.fzu.qujing.bean.Type">
+    <select id="getTakeState" resultMap="type1">
         SELECT id,name
         FROM taskstate
         WHERE id = #{id}
     </select>
 
-    <select id="getTaskType" resultType="edu.fzu.qujing.bean.Type">
+    <select id="getTaskType" resultMap="type1">
         SELECT id,name
         FROM tasktype
         WHERE id = #{id}
     </select>
 
-    <select id="listExpensesType" resultType="edu.fzu.qujing.bean.Type">
+    <select id="listExpensesType" resultMap="type1">
         SELECT id,name
         FROM consumptiontype
     </select>
 
-    <select id="getExpensesType" resultType="edu.fzu.qujing.bean.Type">
+    <select id="getExpensesType" resultMap="type1">
         SELECT id,name
         FROM consumptiontype
         WHERE id = #{id}
     </select>
 
-    <select id="listFeedBackTpe" resultType="edu.fzu.qujing.bean.Type">
+    <select id="listFeedBackTpe" resultMap="type2">
         SELECT id,type
         FROM feedbacktype
     </select>
 
-    <select id="listSuitType" resultType="edu.fzu.qujing.bean.Type">
+    <select id="listSuitType" resultMap="type2">
         SELECT id,type
         FROM suittype
     </select>
 
-    <select id="getFeedBackTpe" resultType="edu.fzu.qujing.bean.Type">
+    <select id="getFeedBackTpe" resultMap="type2">
         SELECT id,type
         FROM feedbacktype
         WHERE id = #{id}
     </select>
 
-    <select id="getSuitType" resultType="edu.fzu.qujing.bean.Type">
+    <select id="getSuitType" resultMap="type2">
         SELECT id,type
         FROM suittype
         WHERE id = #{id}

@@ -1,5 +1,6 @@
 package edu.fzu.qujing.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import edu.fzu.qujing.bean.Task;
 import edu.fzu.qujing.service.TaskService;
 import edu.fzu.qujing.util.JwtUtil;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +22,9 @@ public class TaskController {
 
     @Autowired
     TaskService taskService;
+
+
+
 
 
     @ApiOperation(value = "发布任务接口", notes = "ttl字段是分钟")
@@ -63,9 +68,10 @@ public class TaskController {
     })
 
     @DeleteMapping("/sender/cancel/{id}")
-    public ResponseEntity<String> senderCancleTask(@ApiIgnore @PathVariable("id") Integer id,
+    public ResponseEntity<String> senderCancelTask(@ApiIgnore @PathVariable("id") Integer id,
                                                    @ApiIgnore @RequestBody Map<String, String> map,
                                                    @ApiIgnore HttpServletRequest request) {
+        System.out.println("方法被执行");
         String subject = JwtUtil.getSubject(request);
         String content = map.get("content");
         String type = map.get("type");
@@ -85,7 +91,7 @@ public class TaskController {
             @ApiResponse(code = 200, message = "Cancel success"),
     })
     @DeleteMapping("/receiver/cancel/{id}")
-    public ResponseEntity<String> receiverCancleTask(@ApiIgnore @PathVariable("id") Integer id,
+    public ResponseEntity<String> receiverCancelTask(@ApiIgnore @PathVariable("id") Integer id,
                                                      @ApiIgnore @RequestBody Map<String, String> map,
                                                      @ApiIgnore HttpServletRequest request) {
         String subject = JwtUtil.getSubject(request);
@@ -130,8 +136,18 @@ public class TaskController {
 
     @ApiOperation(value = "获取未被接受的任务列表", notes = "URL传递pos,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
     @GetMapping("/listUnacceptedTask/{pos}")
-    public List<Task> listUnacceptedTask(@ApiIgnore @PathVariable("pos") Integer pos) {
-        return taskService.listUnacceptedTask(pos);
+    public List<Task> listUnacceptedTask(@ApiIgnore @PathVariable("pos") Integer pos,
+                                         @ApiIgnore HttpServletRequest request) {
+        return taskService.listUnacceptedTask(pos,JwtUtil.getSubject(request));
+    }
+
+
+    @GetMapping("/getCount/unacceptedTask")
+    public Map<String,Integer> getCountToUnacceptedTask() {
+        Map<String,Integer> map = new HashMap<>();
+        Integer count = taskService.getCount(new QueryWrapper<Task>().eq("state", 1));
+        map.put("count",count);
+        return map;
     }
 
 
@@ -145,7 +161,15 @@ public class TaskController {
         return taskService.listAccept(subject, pos);
     }
 
-
+    @GetMapping("/getCount/accept")
+    public Map<String,Integer> getCountToAccept(@ApiIgnore HttpServletRequest request) {
+        String subject = JwtUtil.getSubject(request);
+        Map<String,Integer> map = new HashMap<>();
+        Integer count = taskService.getCount(new QueryWrapper<Task>()
+                .eq("receiverid", subject));
+        map.put("count",count);
+        return map;
+    }
 
 
     @ApiOperation(value = "获取当前用户发布的任务列表", notes = "URL传递pos,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
@@ -157,6 +181,15 @@ public class TaskController {
     }
 
 
+    @GetMapping("/getCount/publish")
+    public Map<String,Integer> getCountToPublish(@ApiIgnore HttpServletRequest request) {
+        String subject = JwtUtil.getSubject(request);
+        Map<String,Integer> map = new HashMap<>();
+        Integer count = taskService.getCount(new QueryWrapper<Task>()
+                .eq("senderid", subject));
+        map.put("count",count);
+        return map;
+    }
 
 
     @ApiOperation(value = "获当前用户接受的任务列表", notes = "URL传递id,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")

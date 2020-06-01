@@ -14,6 +14,7 @@ import edu.fzu.qujing.config.annotation.test;
 import edu.fzu.qujing.mapper.TaskMapper;
 import edu.fzu.qujing.mapper.UserMapper;
 import edu.fzu.qujing.service.TaskService;
+import edu.fzu.qujing.service.TypeService;
 import edu.fzu.qujing.service.UserService;
 import edu.fzu.qujing.util.PhoneUtil;
 import edu.fzu.qujing.util.RedisUtil;

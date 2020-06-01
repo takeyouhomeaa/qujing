@@ -15,6 +15,7 @@ import edu.fzu.qujing.util.RedisUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static edu.fzu.qujing.util.PageUtil.PAGE_SIZE;
+import static edu.fzu.qujing.util.PageUtil.PRELOAD_POS;
 
 @Slf4j
 @Service
@@ -39,14 +43,43 @@ public class TaskServiceImpl implements TaskService {
     @Autowired
     UserService userService;
 
-    /**
-     * 查询未有人接受的任务
-     *
-     * @param pos
-     * @return
-     */
+    @Resource
+    PageService taskPageServiceImpl;
+
+
+
+
+
+    @Async
+    public void updateCache(String key,Integer pos,String studentId){
+        Integer count = taskPageServiceImpl.getCount(key, pos);
+        if(count < PAGE_SIZE){
+            for(Integer i = pos + 1;i < pos + 3;i++) {
+                List<Task> list = listUnacceptedTask(i,studentId);
+               taskPageServiceImpl.saveCache(key, list, null);
+            }
+        }
+    }
+
+    private List<Task> listTaskByCache(String key,Integer pos,String studentId){
+        Integer tpos = pos;
+        List<Task> list = taskPageServiceImpl.listPageDataByCache(key, tpos);
+        if(list != null && list.size() != 0) {
+            updateCache(key, pos,studentId);
+            return list;
+        }
+        return null;
+    }
+
+
     @Override
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
+    public Integer getCount(QueryWrapper queryWrapper) {
+        return taskMapper.selectCount(queryWrapper);
+    }
+
+
+
+    @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
     public List<Task> listUnacceptedTask(Integer pos) {
         Page<Task> page = new Page<>(pos, PageUtil.PAGES);
@@ -55,12 +88,8 @@ public class TaskServiceImpl implements TaskService {
         return taskIPage.getRecords();
     }
 
-    /**
-     * 根据任务id查找任务详细信息
-     *
-     * @param id 任务id
-     * @return
-     */
+
+
     @Override
     @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     public Task getDetailTask(Integer id) {
@@ -70,22 +99,18 @@ public class TaskServiceImpl implements TaskService {
         return taskById;
     }
 
-    /**
-     * 发布任务
-     *
-     * @param map
-     * @return
-     */
+
+
     @Override
     @Caching(
-            put = @CachePut(key = "'getDetailTask(' + #result.id + ')'",unless = "#result == null"),
             evict = {
-                    @CacheEvict(key = "'listUnacceptedTask(*)'"),
                     @CacheEvict(key = "'listPublish(*)'"),
-                    @CacheEvict(cacheNames = "user",key = "'getUserPoints(' + #result.senderid + ')'")
             }
     )
+    @CachePut(key = "'getDetailTask(' + #result.id + ')'",unless = "#result == null")
     public Task postTask(Map<String,String> map) {
+
+
         String studentId = map.get("studentId");
         Integer points = Integer.valueOf(map.get("points"));
         User user = userService.getUserPoints(studentId);
@@ -95,6 +120,9 @@ public class TaskServiceImpl implements TaskService {
         }
         user.setPoints(userPoints - points);
         userService.updatePoints(user);
+
+        String key = "user::getUserPoints(" + user.getPhone() + ")";
+        RedisUtil.set(key,user);
 
         Task task = new Task();
         task.setName(map.get("name"));
@@ -109,6 +137,7 @@ public class TaskServiceImpl implements TaskService {
         taskMapper.insert(task);
         Integer id = task.getId();
 
+        taskPageServiceImpl.delCache("listUnacceptedTask", id);
 
         DelayQueueUtil.addDelayTaskToCancel(new DelayTask(id,studentId,1000 * 60 * 10));
         return task;
@@ -123,21 +152,9 @@ public class TaskServiceImpl implements TaskService {
     }
 
 
-    /**
-     * 接受任务
-     *
-     * @param id
-     * @param studentId
-     * @return
-     */
-    @Caching(
-            put = @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null or #result.id == null"),
-            evict = {
-                    @CacheEvict(key = "'listUnacceptedTask(*)'"),
-                    @CacheEvict(key = "'listAccept(*)'")
-            }
-    )
+
     @Override
+    @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null or #result.id == null")
     public Task acceptTask(Integer id,String studentId) {
         User user = userService.getReceiveTaskNumber(studentId);
         if(user.getReceiveTaskNumber() == 3) {
@@ -145,12 +162,15 @@ public class TaskServiceImpl implements TaskService {
         }
 
         Task task = taskMapper.selectById(id);
-        if(task.getState() == 1){
-            task.setState(2);
-            task.setReceiverid(studentId);
-            taskMapper.updateById(task);
-            userService.updateReceiveTaskNumber(studentId, 1);
-            return task;
+        synchronized (this) {
+            if (task.getState() == 1) {
+                task.setState(2);
+                task.setReceiverid(studentId);
+                taskMapper.updateById(task);
+                userService.updateReceiveTaskNumber(studentId, 1);
+                return task;
+            }
+
         }
 
         return null;
@@ -158,23 +178,12 @@ public class TaskServiceImpl implements TaskService {
 
 
 
-    /**
-     * 雇主取消任务
-     *
-     * @param id      任务ID
-     * @param content 理由
-     * @param type    取消类型
-     */
-    @Caching(
-            put = @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null"),
-            evict = {
-                    @CacheEvict(key = "'listAccept( '+ #studentId + ',*)'"),
-                    @CacheEvict(key = "'listPublish( '+ #studentId + ',*)'"),
-                    @CacheEvict(cacheNames = "user",key = "'getUserPoints(' + #studentId + ')'")
-            }
-    )
+
     @Override
+    @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null or #result.id == null")
     public Task cancelTaskToEmployer(Integer id,String studentId ,String content, String type) {
+
+
 
         cancelTaskService.save(id, content, type);
         DelayQueueUtil.removeDelayTaskToCancel(new DelayTask(id));
@@ -183,13 +192,7 @@ public class TaskServiceImpl implements TaskService {
 
 
 
-    /**
-     * 雇员取消任务
-     *
-     * @param id      任务ID
-     * @param content 理由
-     * @param type    取消类型
-     */
+
     @Caching(
             put = @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null"),
             evict = {
@@ -209,11 +212,6 @@ public class TaskServiceImpl implements TaskService {
 
 
 
-    /**
-     * 雇员完成任务
-     *
-     * @param id 任务ID
-     */
     @Caching(
             put = @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null"),
             evict = {
@@ -228,11 +226,8 @@ public class TaskServiceImpl implements TaskService {
     }
 
 
-    /**
-     * 雇主确认完成任务
-     *
-     * @param id 任务ID
-     */
+
+
     @Caching(
             put = {
                     @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null"),
@@ -257,13 +252,7 @@ public class TaskServiceImpl implements TaskService {
 
 
 
-    /**
-     * 按照学号查找已接受的任务
-     *
-     * @param studentId
-     * @param pos
-     * @return
-     */
+
     @Override
     @Cacheable(key = "#root.methodName + '(' + #root.args + ')",unless = "#result == null")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
@@ -272,13 +261,7 @@ public class TaskServiceImpl implements TaskService {
         return taskMapper.listTaskByStudentId(page, null, studentId).getRecords();
     }
 
-    /**
-     * 按照学号查找已发布的任务
-     *
-     * @param studentId
-     * @param pos
-     * @return
-     */
+
     @Override
     @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
@@ -301,11 +284,7 @@ public class TaskServiceImpl implements TaskService {
         RedisUtil.set(key3, task);
     }
 
-    /**
-     * 任务10分钟未有人接受,自动取消
-     *
-     * @return 异步线程
-     */
+
     @Override
     public Runnable taskWasNotTaken() {
         Runnable runnable = ()->{
@@ -322,11 +301,7 @@ public class TaskServiceImpl implements TaskService {
         return runnable;
     }
 
-    /**
-     * 任务完成，自动确认
-     *
-     * @return 异步线程
-     */
+
     @Override
     public Runnable autoTaskConfirm() {
         Runnable runnable = ()->{
@@ -344,5 +319,7 @@ public class TaskServiceImpl implements TaskService {
         };
         return runnable;
     }
+
+
 
 }

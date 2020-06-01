@@ -5,6 +5,12 @@
 
 <!-- 使用接口 代理的方式 namespace必须和接口的全路径名称一致 -->
 <mapper namespace="edu.fzu.qujing.mapper.TaskMapper">
+
+    <resultMap id="task" type="edu.fzu.qujing.bean.Task">
+        <id column="id" property="id"></id>
+        <result column="" property="name"></result>
+    </resultMap>
+
     <select id="getCountBySenderId" resultType="java.lang.Integer">
         SELECT COUNT(*)
         FROM task
@@ -18,7 +24,7 @@
         WHERE receiverid = #{studentId}
     </select>
 
-    <select id="listSimpleTask" resultType="edu.fzu.qujing.bean.Task">
+    <select id="listTask" resultType="edu.fzu.qujing.bean.Task">
         SELECT
         id,
         name,

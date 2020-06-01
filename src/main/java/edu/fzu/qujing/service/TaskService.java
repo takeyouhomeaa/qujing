@@ -17,7 +17,19 @@ public interface TaskService {
      * @param pos
      * @return
      */
-    List<Task> listUnacceptedTask(Integer pos);
+    List<Task> listUnacceptedTask(Integer pos,String studentId);
+
+
+    /**
+     * 以类型查询未有人接受的任务
+     * @param pos
+     * @param type
+     * @return
+     */
+    List<Task> listUnacceptedTaskByType(Integer pos,Integer type,String studentId);
+
+
+
 
     /**
      * 按照学号查找已接受的任务
@@ -43,10 +55,13 @@ public interface TaskService {
 
     /**
      * 根据任务id查找任务详细信息
+     *
      * @param id 任务id
      * @return
      */
     Task getDetailTask(Integer id);
+
+
 
     /**
      * 发布任务

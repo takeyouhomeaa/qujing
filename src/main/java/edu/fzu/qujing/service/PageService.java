@@ -4,6 +4,7 @@ import edu.fzu.qujing.bean.Task;
 import io.swagger.models.auth.In;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 
 @Service
@@ -13,10 +14,10 @@ public interface PageService {
      * 保存缓存
      *
      * @param key
-     * @param id
+     * @param object
      * @param timeout
      */
-    void saveCache(String key, Integer id, final Integer timeout);
+    void saveCache(String key, Object object, final Integer timeout);
 
     /**
      * 保存缓存
@@ -25,7 +26,7 @@ public interface PageService {
      * @param list
      * @param timeout
      */
-    void saveCache(String key, List<Task> list, final Integer timeout);
+    void saveCache(String key, List<?> list, final Integer timeout);
 
 
     /**
@@ -57,4 +58,10 @@ public interface PageService {
     void delCache(String key,Integer id);
 
 
+    /**
+     * 缓存预加载
+     * @param studentId
+     * @return
+     */
+    Runnable cachePreload(String studentId);
 }

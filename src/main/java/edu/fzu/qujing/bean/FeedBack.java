@@ -24,6 +24,7 @@ public class FeedBack implements Serializable {
     private String content;
 
     @ApiModelProperty("任务ID")
+    @TableField("taskId")
     private Integer task;
 
     @ApiModelProperty("创建时间")

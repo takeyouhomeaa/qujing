@@ -57,7 +57,7 @@ public class PhoneUtil {
     }
 
     public static String getCode(){
-        return String.valueOf(UUID.randomUUID().toString().hashCode()).substring(0, 5);
+        return String.valueOf(Math.abs(UUID.randomUUID().toString().hashCode())).substring(0, 5);
     }
 
     public static void main(String[] args) {

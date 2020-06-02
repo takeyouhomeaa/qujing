@@ -1,12 +1,13 @@
 package edu.fzu.qujing.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import edu.fzu.qujing.bean.Log;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
 
-public interface LogMapper {
+public interface LogMapper extends BaseMapper<Log> {
     /**
      * 查询数据条数
      *
@@ -29,7 +30,7 @@ public interface LogMapper {
      * @param pages 数据条数
      * @return Log列表
      */
-    public List<Log> listLogByPagination(@Param("pos") Integer pos, @Param("pages") Integer pages);
+    List<Log> listLogByPagination(@Param("pos") Integer pos, @Param("pages") Integer pages);
 
 
     /**
@@ -37,6 +38,6 @@ public interface LogMapper {
      *
      * @param log 更新的数据和id
      */
-    public void updateLog(Log log);
+    void updateLog(Log log);
 
 }

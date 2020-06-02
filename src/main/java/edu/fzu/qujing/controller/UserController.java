@@ -1,5 +1,6 @@
 package edu.fzu.qujing.controller;
 
+import edu.fzu.qujing.annotation.SystemControllerLog;
 import edu.fzu.qujing.bean.User;
 import edu.fzu.qujing.service.UserService;
 import edu.fzu.qujing.util.JwtUtil;
@@ -21,6 +22,8 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+
+
     @ApiOperation(value = "更改密码接口")
     @ApiImplicitParams({
             @ApiImplicitParam(value = "原密码", name = "oldPwd", dataType = "string", required = true),
@@ -30,6 +33,7 @@ public class UserController {
             @ApiResponse(code = 200, message = "Modified success"),
             @ApiResponse(code = 403, message = "The old password does not match")
     })
+    @SystemControllerLog("更改密码")
     @PutMapping("/updatePwd")
     public ResponseEntity<String> updatePassword(@ApiIgnore @RequestBody Map<String,String> map,
                                          @ApiIgnore HttpServletRequest request){
@@ -50,6 +54,7 @@ public class UserController {
             @ApiResponse(code = 200, message = "true"),
             @ApiResponse(code = 404, message = "false")
     })
+    @SystemControllerLog("检查手机号是否存")
     @GetMapping("/checkPhone")
     public ResponseEntity<String> checkPhone(@ApiIgnore @RequestBody Map<String,String> map) {
         if(userService.checkPhone(map.get("phone"))){
@@ -60,12 +65,13 @@ public class UserController {
 
 
 
-    @ApiOperation(value = "检查手机号是否存在接口")
+    @ApiOperation(value = "检查学号是否存在接口")
     @ApiImplicitParam(value = "学号", name = "studentId", dataType = "string", required = true)
     @ApiResponses({
             @ApiResponse(code = 200, message = "true"),
             @ApiResponse(code = 404, message = "false")
     })
+    @SystemControllerLog("检查学号是否存在")
     @GetMapping("/checkStudentId")
     public ResponseEntity<String> checkStudentId(@ApiIgnore @RequestBody Map<String,String> map) {
         if(userService.checkStudentId(map.get("studentId"))){
@@ -77,6 +83,7 @@ public class UserController {
 
 
     @ApiOperation(value = "获取用户积分")
+    @SystemControllerLog("获取用户积分")
     @GetMapping("/getUserPoints")
     public User getUserPoints(@ApiIgnore HttpServletRequest request) {
         return userService.getUserPoints(JwtUtil.getSubject(request));

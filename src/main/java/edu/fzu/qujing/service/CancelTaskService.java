@@ -19,5 +19,5 @@ public interface CancelTaskService {
      * @param type
      * @return
      */
-    CancelTask  save(Integer id, String content, String type);
+    CancelTask  save(Integer id, String content, Integer type);
 }

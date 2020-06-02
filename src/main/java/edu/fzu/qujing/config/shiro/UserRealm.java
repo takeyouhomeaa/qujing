@@ -39,6 +39,8 @@ public class UserRealm extends AuthorizingRealm {
         User userToCheck  = userService.getUserToCheckByStudentId(username);
 
         ByteSource credentialsSalt = ByteSource.Util.bytes(userToCheck.getStudentId());
+        System.out.println("realm :" + userToCheck);
+
         return new SimpleAuthenticationInfo(userToCheck.getStudentId(),
                 userToCheck.getPassword(),
                 credentialsSalt,

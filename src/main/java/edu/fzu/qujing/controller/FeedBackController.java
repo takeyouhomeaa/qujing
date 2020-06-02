@@ -1,5 +1,6 @@
 package edu.fzu.qujing.controller;
 
+import edu.fzu.qujing.annotation.SystemControllerLog;
 import edu.fzu.qujing.service.FeedBackService;
 import edu.fzu.qujing.util.JwtUtil;
 import io.swagger.annotations.*;
@@ -31,6 +32,7 @@ public class FeedBackController {
     @ApiResponses({
             @ApiResponse(code = 200, message = "success"),
     })
+    @SystemControllerLog("任务欺诈反馈")
     @PostMapping("/suitTask")
     public ResponseEntity<String> suitTask(@ApiIgnore HttpServletRequest request,
                                            @ApiIgnore @RequestBody Map<String, String> params) {

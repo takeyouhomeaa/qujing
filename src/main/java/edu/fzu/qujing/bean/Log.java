@@ -45,15 +45,11 @@ public class Log implements Serializable {
     private Date operateDate;
 
     @ApiModelProperty("结束时间")
-    private Date timeout;
+    private String timeout;
 
     @ApiModelProperty("用户ID")
     private String userId;
 
-    @TableField(fill = FieldFill.INSERT)
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
-    @ApiModelProperty("创建时间")
-    private Date time;
 
     @TableField(fill = FieldFill.INSERT_UPDATE)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")

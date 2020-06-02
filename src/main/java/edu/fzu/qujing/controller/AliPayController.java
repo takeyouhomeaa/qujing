@@ -2,6 +2,7 @@ package edu.fzu.qujing.controller;
 
 import com.alipay.api.AlipayApiException;
 
+import edu.fzu.qujing.annotation.SystemControllerLog;
 import edu.fzu.qujing.bean.Expenses;
 import edu.fzu.qujing.bean.Recharge;
 import edu.fzu.qujing.bean.Type;
@@ -39,7 +40,7 @@ public class AliPayController {
             @ApiImplicitParam(value = "支付金额", name = "totalAmount", dataType = "string", required = true)
     })
 
-
+    @SystemControllerLog("充值接口")
     @PostMapping(value = "/recharge")
     public String goAlipay(@ApiIgnore @RequestBody Map<String, String> map,
                            @ApiIgnore HttpServletRequest request) {
@@ -83,7 +84,7 @@ public class AliPayController {
             @ApiResponse(code = 403, message = "没有这个返回值"),
             @ApiResponse(code = 401, message = "没有这个返回值")
     })
-
+    @SystemControllerLog("提现接口")
     @PutMapping("/withdraw")
     public ResponseEntity<String> withdraw(@ApiIgnore @RequestBody Map<String, String> map,
                                            @ApiIgnore HttpServletRequest request) {
@@ -99,7 +100,7 @@ public class AliPayController {
     }
 
     @ApiOperation(value = "获取用户的消费记录", notes = "URL传递pos,消费类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
-
+    @SystemControllerLog("获取用户的消费记录")
     @GetMapping("/listExpenseRecord/{pos}")
     public List<Expenses> listExpenseRecord(@ApiIgnore @PathVariable("pos") Integer pos,
                                             @ApiIgnore HttpServletRequest request) {
@@ -107,7 +108,7 @@ public class AliPayController {
     }
 
     @ApiOperation(value = "获取用户的消费记录", notes = "URL传递pos,消费类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
-
+    @SystemControllerLog("获取用户的消费记录")
     @GetMapping("/listRechargeRecord/{pos}")
     public List<Recharge> listRechargeRecord(@ApiIgnore @PathVariable("pos") Integer pos,
                                              @ApiIgnore HttpServletRequest request) {

@@ -1,5 +1,6 @@
 package edu.fzu.qujing.controller;
 
+import edu.fzu.qujing.annotation.SystemControllerLog;
 import edu.fzu.qujing.bean.Suit;
 import edu.fzu.qujing.service.SuitService;
 import edu.fzu.qujing.util.JwtUtil;
@@ -34,6 +35,7 @@ public class SuitController {
     @ApiResponses({
             @ApiResponse(code = 200, message = "success"),
     })
+    @SystemControllerLog("举报任务")
     @PostMapping("/suitTask")
     public ResponseEntity<String> suitTask(@ApiIgnore HttpServletRequest request,
                                    @ApiIgnore @RequestBody Map<String, String> params) {

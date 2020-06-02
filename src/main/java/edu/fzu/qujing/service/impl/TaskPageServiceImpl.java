@@ -14,6 +14,7 @@ import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -30,15 +31,27 @@ public class TaskPageServiceImpl implements PageService {
 
 
     @Override
-    public void saveCache(String key, Integer id, Integer timeout) {
-
+    public void saveCache(String key,Object object,Integer timeout) {
+        Task task = (Task)object;
+        Long time = task.getDeadline().getTime();
+        Integer expedited = task.getExpedited();
+        double rate = time.doubleValue() + expedited.doubleValue();
+        RedisUtil.zadd("task::" + key, task.getId(),rate);
+        String key2 = "task::getDetailTask("+ task.getId() +")";
+        if(RedisUtil.hasKey(key2)) {
+            RedisUtil.set(key2, task);
+        }
+        if(timeout != null) {
+            RedisUtil.expire(key2,timeout);
+            RedisUtil.expire(key, timeout);
+        }
     }
 
     @Override
-    public void saveCache(String key, List<Task> list, Integer timeout) {
+    public void saveCache(String key, List<?> list, Integer timeout) {
         if (list.size() > 0) {
             for (Integer i = 0; i < list.size(); i++) {
-                Task task = list.get(i);
+                Task task = (Task) list.get(i);
                 Long time = task.getDeadline().getTime();
                 Integer expedited = task.getExpedited();
                 double rate = time.doubleValue() + expedited.doubleValue();
@@ -72,7 +85,7 @@ public class TaskPageServiceImpl implements PageService {
                 Integer endIndex = (beginIndex + PAGE_SIZE - 1);
 
 
-                Set<Task> sets = RedisUtil.zarrange("task::" + key, beginIndex, endIndex);
+                Set<Task> sets = RedisUtil.zrevrsearrange("task::" + key, beginIndex, endIndex);
                 if (sets != null && !sets.isEmpty() ) {
                     for (Task task : sets) {
                         list.add((Task) RedisUtil.get("task::getDetailTask("+ task.getId() +")"));
@@ -98,29 +111,34 @@ public class TaskPageServiceImpl implements PageService {
     }
 
 
-    @Async
-    public void taskCachePreload(String studenId) {
-        Integer count = taskService.getCount(new QueryWrapper<Task>().eq("state", 1));
-        int pos = count / PAGE_SIZE;
-        if(pos > PAGES ) {
-            pos = PAGES;
-        }
-        for(Integer i = 1;i <= pos ;i++) {
-            taskService.listUnacceptedTask(i,studenId);
 
-        }
+    @Override
+    public Runnable cachePreload(String studentId) {
+      Runnable runnable = ()->{
+          Integer count = taskService.getCount(new QueryWrapper<Task>().eq("state", 1));
+          int pos = count / PAGE_SIZE;
+          if(pos > PAGES ) {
+              pos = PAGES;
+          }
+          for(Integer i = 1;i <= pos ;i++) {
+              taskService.listUnacceptedTask(i,studentId);
 
-        for(Integer i = 1;i <= 5;i++) {
-            pos =taskService.getCount(new QueryWrapper<Task>().eq("ttid", i));
-            if(pos > PAGES ) {
-                pos = PAGES;
-            }
-            for(Integer j = 1;j <= pos;j++) {
-                taskService.listUnacceptedTaskByType(j,i,studenId);
-            }
-        }
+          }
 
-        log.info("任务缓存预加载完毕");
+          for(Integer i = 1;i <= 5;i++) {
+              pos =taskService.getCount(new QueryWrapper<Task>().eq("ttid", i));
+              if(pos > PAGES ) {
+                  pos = PAGES;
+              }
+              for(Integer j = 1;j <= pos;j++) {
+                  taskService.listUnacceptedTaskByType(j,i,studentId);
+              }
+          }
+
+          log.info("任务缓存预加载完毕");
+      };
+
+      return runnable;
     }
 
 

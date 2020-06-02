@@ -1,6 +1,7 @@
 package edu.fzu.qujing.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import edu.fzu.qujing.annotation.SystemControllerLog;
 import edu.fzu.qujing.bean.Task;
 import edu.fzu.qujing.service.TaskService;
 import edu.fzu.qujing.util.JwtUtil;
@@ -36,13 +37,11 @@ public class TaskController {
             @ApiImplicitParam(value = "是否加急", name = "expedited", dataType = "string", required = true),
             @ApiImplicitParam(value = "积分", name = "points", dataType = "string", required = true)
     })
-
     @ApiResponses({
             @ApiResponse(code = 200, message = "Post success"),
             @ApiResponse(code = 403,message = "points are not enough")
     })
-
-
+    @SystemControllerLog("发布任务")
     @PostMapping("/post")
     public ResponseEntity<String> postTask(@ApiIgnore HttpServletRequest request,
                                            @ApiIgnore @RequestBody Map<String, String> map) {
@@ -62,11 +61,10 @@ public class TaskController {
             @ApiImplicitParam(value = "取消理由", name = "content", dataType = "string", required = true),
             @ApiImplicitParam(value = "取消类型", name = "type", dataType = "string", required = true)
     })
-
     @ApiResponses({
             @ApiResponse(code = 200, message = "Cancel success"),
     })
-
+    @SystemControllerLog("雇主取消任务")
     @DeleteMapping("/sender/cancel/{id}")
     public ResponseEntity<String> senderCancelTask(@ApiIgnore @PathVariable("id") Integer id,
                                                    @ApiIgnore @RequestBody Map<String, String> map,
@@ -90,6 +88,7 @@ public class TaskController {
     @ApiResponses({
             @ApiResponse(code = 200, message = "Cancel success"),
     })
+    @SystemControllerLog("接受者取消任务")
     @DeleteMapping("/receiver/cancel/{id}")
     public ResponseEntity<String> receiverCancelTask(@ApiIgnore @PathVariable("id") Integer id,
                                                      @ApiIgnore @RequestBody Map<String, String> map,
@@ -108,6 +107,7 @@ public class TaskController {
     @ApiResponses({
             @ApiResponse(code = 200, message = "Accomplish success"),
     })
+    @SystemControllerLog("接受者完成任务")
     @PutMapping("/receiver/accomplish/{id}")
     public ResponseEntity<String> receiverAccomplishTask(@ApiIgnore @PathVariable Integer id,
                                                          @ApiIgnore HttpServletRequest request) {
@@ -123,8 +123,9 @@ public class TaskController {
     @ApiResponses({
             @ApiResponse(code = 200, message = "Confirm success"),
     })
+    @SystemControllerLog("雇主确认任务完成")
     @PutMapping("/sender/confirm/{id}")
-    public ResponseEntity<String> senderAccomplishTask(@ApiIgnore @PathVariable Integer id,
+    public ResponseEntity<String> senderAccomplishTask(@ApiIgnore @PathVariable("id") Integer id,
                                                        @ApiIgnore HttpServletRequest request) {
         String subject = JwtUtil.getSubject(request);
         taskService.confirmTaskToEmployer(id, subject);
@@ -135,16 +136,18 @@ public class TaskController {
 
 
     @ApiOperation(value = "获取未被接受的任务列表", notes = "URL传递pos,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
+    @SystemControllerLog("获取未被接受的任务列表")
     @GetMapping("/listUnacceptedTask/{pos}")
     public List<Task> listUnacceptedTask(@ApiIgnore @PathVariable("pos") Integer pos,
                                          @ApiIgnore HttpServletRequest request) {
         return taskService.listUnacceptedTask(pos,JwtUtil.getSubject(request));
     }
 
-
+    @ApiOperation(value = "获取未接受任务的数量",notes = "每页是10条记录")
+    @SystemControllerLog("获取未接受任务的数量")
     @GetMapping("/getCount/unacceptedTask")
     public Map<String,Integer> getCountToUnacceptedTask() {
-        Map<String,Integer> map = new HashMap<>();
+        Map<String,Integer> map = new HashMap<>(2);
         Integer count = taskService.getCount(new QueryWrapper<Task>().eq("state", 1));
         map.put("count",count);
         return map;
@@ -152,26 +155,51 @@ public class TaskController {
 
 
 
+    @SystemControllerLog("获取未被接受的任务列表")
+    @ApiOperation(value = "获取未被接受的任务列表", notes = "URL传递pos,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
+    @GetMapping("/listUnacceptedTaskByType/{pos}/{type}")
+    public List<Task> listUnacceptedTaskByType(@ApiIgnore @PathVariable("pos") Integer pos,
+                                               @ApiIgnore @PathVariable("type") Integer type,
+                                               @ApiIgnore HttpServletRequest request) {
+        return taskService.listUnacceptedTaskByType(pos,type,JwtUtil.getSubject(request));
+    }
 
+
+    @SystemControllerLog("获取未接受任务的数量(按照类型)")
+    @ApiOperation(value = "获取未接受任务的数量(按照类型)",notes = "每页是10条记录")
+    @GetMapping("/getCount/UnacceptedTaskByType/{type}")
+    public Map<String,Integer> getCountToUnacceptedTaskByType(@ApiIgnore @PathVariable Integer type) {
+        Map<String,Integer> map = new HashMap<>(2);
+        Integer count = taskService.getCount(new QueryWrapper<Task>()
+                                            .eq("state", 1)
+                                            .eq("ttid", type));
+        map.put("count",count);
+        return map;
+    }
+
+
+    @SystemControllerLog("获取当前用户接受的任务列表")
     @ApiOperation(value = "获取当前用户接受的任务列表", notes = "URL传递pos,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
     @GetMapping("/listAccept/{pos}")
-    public List<Task> listAccept(@ApiIgnore @PathVariable("pos") Integer pos,
+    public List<Task> listAcceptToFinished(@ApiIgnore @PathVariable("pos") Integer pos,
                                  @ApiIgnore HttpServletRequest request) {
         String subject = JwtUtil.getSubject(request);
         return taskService.listAccept(subject, pos);
     }
 
+    @SystemControllerLog("获取用户接受任务的数量")
+    @ApiOperation(value = "获取用户接受任务的数量",notes = "每页是10条记录")
     @GetMapping("/getCount/accept")
     public Map<String,Integer> getCountToAccept(@ApiIgnore HttpServletRequest request) {
         String subject = JwtUtil.getSubject(request);
-        Map<String,Integer> map = new HashMap<>();
+        Map<String,Integer> map = new HashMap<>(2);
         Integer count = taskService.getCount(new QueryWrapper<Task>()
                 .eq("receiverid", subject));
         map.put("count",count);
         return map;
     }
 
-
+    @SystemControllerLog("获取当前用户发布的任务列表")
     @ApiOperation(value = "获取当前用户发布的任务列表", notes = "URL传递pos,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
     @GetMapping("/listPublish/{pos}")
     public List<Task> listPublish(@PathVariable("pos") Integer pos,
@@ -180,7 +208,8 @@ public class TaskController {
         return taskService.listPublish(subject, pos);
     }
 
-
+    @SystemControllerLog("获取未接受任务的数量(按照类型)")
+    @ApiOperation(value = "获取未接受任务的数量(按照类型)",notes = "每页是10条记录")
     @GetMapping("/getCount/publish")
     public Map<String,Integer> getCountToPublish(@ApiIgnore HttpServletRequest request) {
         String subject = JwtUtil.getSubject(request);
@@ -192,7 +221,8 @@ public class TaskController {
     }
 
 
-    @ApiOperation(value = "获当前用户接受的任务列表", notes = "URL传递id,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
+    @SystemControllerLog("获得详细的任务信息")
+    @ApiOperation(value = "获得详细的任务信息", notes = "URL传递id,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
     @GetMapping("/getDetailTask/{id}")
     public Task getDetailTask(@ApiIgnore @PathVariable("id") Integer id) {
         return taskService.getDetailTask(id);
@@ -207,6 +237,7 @@ public class TaskController {
             @ApiResponse(code = 403, message = "Acceptable tasks are full"),
             @ApiResponse(code = 400, message = "Task accepted by others"),
     })
+    @SystemControllerLog("接受任务")
     @PutMapping("/acceptTask/{id}")
     public ResponseEntity<String> acceptTask(@ApiIgnore @PathVariable("id") Integer id,
                                              @ApiIgnore HttpServletRequest request) {

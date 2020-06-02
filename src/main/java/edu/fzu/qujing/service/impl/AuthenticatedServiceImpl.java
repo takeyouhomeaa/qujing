@@ -5,6 +5,7 @@ import edu.fzu.qujing.bean.User;
 import edu.fzu.qujing.config.shiro.PhoneToken;
 import edu.fzu.qujing.mapper.UserMapper;
 import edu.fzu.qujing.service.AuthenticatedService;
+import edu.fzu.qujing.service.PageService;
 import edu.fzu.qujing.service.UserService;
 import edu.fzu.qujing.util.*;
 import io.jsonwebtoken.Claims;
@@ -19,9 +20,11 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
 
@@ -34,6 +37,15 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
 
     @Autowired
     UserMapper userMapper;
+
+    @Autowired
+    ThreadPoolTaskExecutor executor;
+
+    @Resource
+    PageService taskPageServiceImpl;
+
+    @Resource
+    PageService settlePageServiceImpl;
 
 
     private ResponseEntity<String> checkAccountStatus(User userToCheck) {
@@ -65,6 +77,8 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
         String jwtToken = JwtUtil.creatJwt(JwtUtil.JWT_ID,userToCheck.getStudentId(),JwtUtil.JWT_EXPIRE);
         System.out.println(jwtToken);
         response.setHeader(JwtUtil.AUTH_HEADER,jwtToken);
+        executor.execute(taskPageServiceImpl.cachePreload(userToCheck.getStudentId()));
+        executor.execute(settlePageServiceImpl.cachePreload(userToCheck.getStudentId()));
         return ResponseEntity.ok("success");
     }
 
@@ -141,7 +155,6 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
     }
 
     @Override
-    @CacheEvict(cacheNames = "user",key = "'getUserToCheckByStudentId(' + #studentId + ')'")
     public void logout(String studentId){}
 
 

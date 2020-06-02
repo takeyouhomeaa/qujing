@@ -32,12 +32,12 @@ public class CancelTaskServiceImpl implements CancelTaskService {
      */
     @CachePut(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     @Override
-    public CancelTask save(Integer id, String content, String type) {
+    public CancelTask save(Integer id, String content, Integer type) {
         CancelTask cancelTask = new CancelTask();
         cancelTask.setContent(content);
         cancelTask.setFlat(0);
         cancelTask.setTask(id);
-        cancelTask.setId(Integer.parseInt(type));
+        cancelTask.setId(type);
         save(cancelTask);
         return cancelTask;
     }

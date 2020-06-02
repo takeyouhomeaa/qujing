@@ -1,5 +1,6 @@
 package edu.fzu.qujing.controller;
 
+import edu.fzu.qujing.annotation.SystemControllerLog;
 import edu.fzu.qujing.bean.Type;
 import edu.fzu.qujing.service.TypeService;
 import io.swagger.annotations.*;
@@ -21,6 +22,7 @@ public class TypeController {
     TypeService typeService;
 
     @ApiOperation(value = "获取任务状态接口")
+    @SystemControllerLog
     @GetMapping("/listTaskState")
     public List<Type> listTaskState() {
        return typeService.listTaskState();
@@ -30,6 +32,7 @@ public class TypeController {
 
 
     @ApiOperation(value = "获取任务类型接口")
+    @SystemControllerLog
     @GetMapping("/listTaskType")
     public List<Type> listTaskType() {
         return typeService.listTaskType();
@@ -39,6 +42,7 @@ public class TypeController {
 
 
     @ApiOperation(value = "通过id获取任务类型接口",notes = "通过URL传递id")
+    @SystemControllerLog
     @GetMapping("/getTaskType/{id}")
     public Type getTaskType(@ApiIgnore @PathVariable("id") Integer id) {
         return typeService.getTaskType(id);
@@ -48,6 +52,7 @@ public class TypeController {
 
 
     @ApiOperation(value = "通过id获取任务状态接口",notes = "通过URL传递id")
+    @SystemControllerLog
     @GetMapping("/getTaskState/{id}")
     public Type getTaskState(@ApiIgnore @PathVariable("id") Integer id) {
         return typeService.getTakeState(id);
@@ -57,6 +62,7 @@ public class TypeController {
 
 
     @ApiOperation(value = "获取消费类型接口")
+    @SystemControllerLog
     @GetMapping("/listExpensesType")
     public List<Type> listExpensesType() {
         return typeService.listExpensesType();
@@ -66,6 +72,7 @@ public class TypeController {
 
 
     @ApiOperation(value = "通过类型id获取欺诈反馈类型",notes = "通过URL传递id")
+    @SystemControllerLog
     @GetMapping("/getFeedBackTpe/{id}")
     public Type getFeedBackTpe(@ApiIgnore @PathVariable("id") Integer id) {
         return typeService.getFeedBackTpe(id);
@@ -75,6 +82,7 @@ public class TypeController {
 
 
     @ApiOperation(value = "通过类型id获得举报类型",notes = "通过URL传递id")
+    @SystemControllerLog("通过类型id获得举报类型")
     @GetMapping("/getSuitType/{id}")
     public Type getSuitType(@ApiIgnore @PathVariable("id") Integer id) {
         return typeService.getSuitType(id);
@@ -84,6 +92,7 @@ public class TypeController {
 
 
     @ApiOperation(value = "获得欺诈反馈类型列表")
+    @SystemControllerLog("获得欺诈反馈类型列表")
     @GetMapping("/listFeedBackTpe")
     public List<Type> listFeedBackTpe() {
         return typeService.listFeedBackTpe();
@@ -92,6 +101,7 @@ public class TypeController {
 
 
     @ApiOperation(value = "获得举报类型列表")
+    @SystemControllerLog
     @GetMapping("/listSuitType")
     public List<Type> listSuitType() {
         return typeService.listSuitType();

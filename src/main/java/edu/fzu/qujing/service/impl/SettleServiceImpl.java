@@ -11,6 +11,7 @@ import edu.fzu.qujing.mapper.UserMapper;
 import edu.fzu.qujing.service.SettleService;
 import edu.fzu.qujing.service.UserService;
 import edu.fzu.qujing.util.PageUtil;
+import edu.fzu.qujing.util.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.*;
 import org.springframework.stereotype.Service;
@@ -78,9 +79,10 @@ public class SettleServiceImpl implements SettleService {
     }
 
     @Override
-    @CacheEvict(key = "'listRecharheRecord(' + #result.userId +',*)'")
     public Recharge addRechargeRecord(Recharge recharge) {
         rechargeMapper.insert(recharge);
+        List<Recharge> list = listRecharheRecord(recharge.getUserId(), 0);
+        RedisUtil.set("settle::listRecharheRecord("+ recharge.getUserId()+ ","+ 0 +")", list);
         return recharge;
     }
 
@@ -90,9 +92,10 @@ public class SettleServiceImpl implements SettleService {
      * @param expenses 消费数据
      */
     @Override
-    @CacheEvict(key = "'listExpensesRecord(' + #result.userId +',*)'")
     public Expenses addExpensesRecord(Expenses expenses) {
         expensesMapper.insert(expenses);
+        List<Expenses> list = listExpensesRecord(expenses.getUserId(), 0);
+        RedisUtil.set("settle::listExpensesRecord("+ expenses.getUserId()+ ","+ 0 +")", list);
         return expenses;
     }
 
@@ -104,7 +107,6 @@ public class SettleServiceImpl implements SettleService {
      * @return 消费记录列表
      */
     @Override
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     @Transactional(propagation = Propagation.NOT_SUPPORTED, readOnly = true)
     public List<Expenses> listExpensesRecord(String studentId, Integer pos) {
         return expensesMapper.listExpense(studentId,new Page<Expenses>(pos,PageUtil.PAGES)).getRecords();
@@ -117,7 +119,6 @@ public class SettleServiceImpl implements SettleService {
      * @return 充值记录列表
      */
     @Override
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     @Transactional(propagation = Propagation.NOT_SUPPORTED, readOnly = true)
     public List<Recharge> listRecharheRecord(String studentId, Integer pos) {
 

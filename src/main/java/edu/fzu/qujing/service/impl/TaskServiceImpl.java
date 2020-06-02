@@ -170,56 +170,51 @@ public class TaskServiceImpl implements TaskService {
                 userService.updateReceiveTaskNumber(studentId, 1);
                 return task;
             }
-
+            String key = "listAccept::" + studentId;
+            taskPageServiceImpl.saveCache(key, task, null);
         }
 
         return null;
     }
 
 
+    private void recoveryPoints(Integer id, String content, Integer type, Task task) {
+        User user = userService.getUserPoints(task.getSenderid());
+        user.setPoints(task.getPoints() + user.getPoints());
+
+        String key = "user::getUserPoints(" +user.getStudentId() + ")";
+        if(RedisUtil.hasKey(key)) {
+            RedisUtil.set(key, user);
+        }
+
+        cancelTaskService.save(id, content, type);
+    }
+
 
 
     @Override
     @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null or #result.id == null")
     public Task cancelTaskToEmployer(Integer id,String studentId ,String content, String type) {
-
-
-
-        cancelTaskService.save(id, content, type);
+        Task task = updateState(id, 3);
+        recoveryPoints(id, content, Integer.valueOf(type), task);
         DelayQueueUtil.removeDelayTaskToCancel(new DelayTask(id));
-        return updateState(id,3);
-    }
-
-
-
-
-    @Caching(
-            put = @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null"),
-            evict = {
-                    @CacheEvict(key = "'listAccept( '+ #studentId + ',*)'"),
-                    @CacheEvict(key = "'listPublish( '+ #studentId + ',*)'"),
-                    @CacheEvict(cacheNames = "user",key = "'getUserPoints(' + #studentId + ')'")
-            }
-    )
-    @Override
-    public Task cancelTaskToEmployee(Integer id,String studentId ,String content, String type) {
-        Task task = updateState(id, 4);
-        User user = userService.getUserPoints(task.getSenderid());
-        user.setPoints(task.getPoints() + user.getPoints());
-        cancelTaskService.save(id, content, type);
         return task;
     }
 
 
 
-    @Caching(
-            put = @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null"),
-            evict = {
-                    @CacheEvict(key = "'listAccept( '+ #studentId + ',*)'"),
-                    @CacheEvict(key = "'listPublish( '+ #studentId + ',*)'")
-            }
-    )
     @Override
+    @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null or #result.id == null")
+    public Task cancelTaskToEmployee(Integer id,String studentId ,String content, String type) {
+        Task task = updateState(id, 4);
+        recoveryPoints(id, content, Integer.valueOf(type), task);
+        return task;
+    }
+
+
+
+    @Override
+    @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null or #result.id == null")
     public Task completeTaskToEmployee(Integer id,String studentId) {
         DelayQueueUtil.addDelayTaskToConfirm(new DelayTask(id,studentId ,1000 * 60 * 10));
         return updateState(id,5);
@@ -228,21 +223,18 @@ public class TaskServiceImpl implements TaskService {
 
 
 
-    @Caching(
-            put = {
-                    @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null"),
-            },
-            evict = {
-                    @CacheEvict(key = "'listAccept( '+ #studentId + ',*)'"),
-                    @CacheEvict(key = "'listPublish( '+ #studentId + ',*)'"),
-                    @CacheEvict(cacheNames = "user",key = "'getUserPoints(' + #studentId + ')'")
-            }
-    )
+
     @Override
+    @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null")
     public Task confirmTaskToEmployer(Integer id,String studentId) {
         Task task = updateState(id,6);
         User user = userService.getUserPoints(task.getReceiverid());
         user.setPoints(task.getPoints() + user.getPoints());
+
+        String key = "user::getUserPoints(" +user.getStudentId() + ")";
+        if(RedisUtil.hasKey(key)) {
+            RedisUtil.set(key, user);
+        }
 
         DelayTask delayTask = new DelayTask();
         delayTask.setId(id);
@@ -263,7 +255,6 @@ public class TaskServiceImpl implements TaskService {
 
 
     @Override
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
     public List<Task> listPublish(String studentId, Integer pos) {
         Page<Task> page = new Page<>(pos, PageUtil.PAGES);
@@ -271,17 +262,14 @@ public class TaskServiceImpl implements TaskService {
     }
 
     public void taskResolve(DelayTask delayTask,Task task){
-        String studentId = delayTask.getStudentId();
-        String key1 = "listAccept(" + studentId + ",*)";
-        String key2 = "listPublish( "+ studentId + ",*)";
-        String key3 = "getDetailTask(" + delayTask.getId() + ")";
-        if(RedisUtil.hasKey(key1)) {
-            RedisUtil.del(key1);
+        String key = "getDetailTask(" + delayTask.getId() + ")";
+
+        if(RedisUtil.hasKey(key)) {
+            RedisUtil.set(key, task);
         }
-        if(RedisUtil.hasKey(key2)) {
-            RedisUtil.del(key2);
-        }
-        RedisUtil.set(key3, task);
+
+        recoveryPoints(task.getId(),"太久无人接单",2,task);
+
     }
 
 
@@ -292,8 +280,6 @@ public class TaskServiceImpl implements TaskService {
             DelayTask delayTask = DelayQueueUtil.getDelayTaskToCancel();
             Integer id = delayTask.getId();
             Task task = updateState(id, 3);
-            User user = userService.getUserPoints(task.getSenderid());
-            user.setPoints(task.getPoints() + user.getPoints());
 
             taskResolve(delayTask,task);
             log.info("taskWasNotTaken 自动取消任务");

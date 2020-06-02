@@ -1,5 +1,6 @@
 package edu.fzu.qujing.controller;
 
+import edu.fzu.qujing.annotation.SystemControllerLog;
 import edu.fzu.qujing.bean.User;
 import edu.fzu.qujing.service.AuthenticatedService;
 import edu.fzu.qujing.service.UserService;
@@ -41,6 +42,7 @@ public class AuthenticatedController {
                     examples = @Example({@ExampleProperty(value = "Account is frozen to 2020-07-02 17:24:25")})),
             @ApiResponse(code = 404,message = "Account does not exist")
     })
+    @SystemControllerLog("用户使用学号登录")
     @ResponseHeader(name="Authorization",description="获取JwtToken")
     @PostMapping("/loginByStudentId")
     public ResponseEntity<String> loginByStudentId(@ApiIgnore @RequestBody Map<String,String> map,
@@ -62,6 +64,7 @@ public class AuthenticatedController {
                     examples = @Example({@ExampleProperty(value = "Account is frozen to 2020-07-02 17:24:25")})),
             @ApiResponse(code = 404,message = "Account does not exist")
     })
+    @SystemControllerLog("用户使用手机登录")
     @ResponseHeader(name="Authorization",description="获取JwtToken")
     @PostMapping("/loginByPhone")
     public ResponseEntity<String> loginByPhone(@ApiIgnore @RequestBody Map<String,String> map,
@@ -82,6 +85,7 @@ public class AuthenticatedController {
     @ApiResponses({
             @ApiResponse(code = 200,message = "success")
     })
+    @SystemControllerLog("用户注册")
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody User user) {
         authenticatedService.register(user);
@@ -97,6 +101,7 @@ public class AuthenticatedController {
             @ApiResponse(code = 200,message = "Captcha has been sent"),
             @ApiResponse(code = 500,message = "SMS server is busy"),
     })
+    @SystemControllerLog("验证码发送接口,用于用户注册")
     @PostMapping("/sendCaptcha/register")
     public ResponseEntity<String> sendCaptchaToRegister(@ApiIgnore @RequestBody Map<String,String> map) {
         String phone = map.get("phone");
@@ -113,6 +118,7 @@ public class AuthenticatedController {
             @ApiResponse(code = 200,message = "Captcha has been sent"),
             @ApiResponse(code = 500,message = "SMS server is busy"),
     })
+    @SystemControllerLog("验证码发送接口,用于忘记密码")
     @PostMapping("/sendCaptcha/forgetPwd")
     public ResponseEntity<String> sendCaptchaToForgetPwd(@ApiIgnore @RequestBody Map<String,String> map) {
         String phone = map.get("phone");
@@ -129,6 +135,7 @@ public class AuthenticatedController {
             @ApiResponse(code = 200,message = "Captcha has been sent"),
             @ApiResponse(code = 500,message = "SMS server is busy"),
     })
+    @SystemControllerLog("验证码发送接口,用于登录")
     @PostMapping("/sendCaptcha/login")
     public ResponseEntity<String> sendCaptchaToLogin(@ApiIgnore @RequestBody Map<String,String> map) {
         String phone = map.get("phone");
@@ -147,6 +154,7 @@ public class AuthenticatedController {
             @ApiResponse(code = 200,message = "Email has been sent"),
             @ApiResponse(code = 403,message = "Verification code mismatch"),
     })
+    @SystemControllerLog("用户激活")
     @PutMapping("/active")
     public ResponseEntity<String> active(@ApiIgnore @RequestBody Map<String,String> map){
         boolean flag = authenticatedService.activeUser(map.get("phone"),map.get("check"));
@@ -157,7 +165,7 @@ public class AuthenticatedController {
         }
     }
 
-
+    @SystemControllerLog("用户注销")
     @ApiOperation(value = "用户退出登录接口", notes = "请在退出登录事件发生时将heaer中的jwtToken 清除")
     @GetMapping("/logout")
     public ResponseEntity<String> logout(@ApiIgnore HttpServletRequest request) {
@@ -176,6 +184,7 @@ public class AuthenticatedController {
             @ApiResponse(code = 200, message = "Modified success"),
             @ApiResponse(code = 403, message = "No permission to change password")
     })
+    @SystemControllerLog("忘记密码")
     @PutMapping("/forgetPwd")
     public ResponseEntity<String> forgetPassword(@ApiIgnore @RequestBody Map<String,String> map) {
         User user = userService.updatePassword(map.get("phone"),map.get("newPwd"));
@@ -198,6 +207,7 @@ public class AuthenticatedController {
             @ApiResponse(code = 200, message = "true"),
             @ApiResponse(code = 404, message = "false")
     })
+    @SystemControllerLog("验证验证码接口,用于用户注册")
     @GetMapping("/verifyCaptcha/register")
     public ResponseEntity<String> verifyCaptchaToRegister(@ApiIgnore @RequestBody Map<String,String> map) {
         if(authenticatedService.verifyCaptchaToRegister(map.get("check"), map.get("phone"))){
@@ -218,6 +228,7 @@ public class AuthenticatedController {
             @ApiResponse(code = 200, message = "true"),
             @ApiResponse(code = 404, message = "false")
     })
+    @SystemControllerLog("验证验证码接口,用于忘记密码")
     @GetMapping("/verifyCaptcha/forgetPwd")
     public ResponseEntity<String> verifyCaptchaToForgetPwd(@ApiIgnore @RequestBody Map<String,String> map) {
         if(authenticatedService.verifyCaptchaToForgetPwd(map.get("check"), map.get("phone"))){

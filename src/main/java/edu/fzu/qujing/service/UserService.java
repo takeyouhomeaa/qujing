@@ -5,6 +5,7 @@ import edu.fzu.qujing.bean.User;
 import org.springframework.stereotype.Service;
 
 import javax.naming.AuthenticationException;
+import java.util.List;
 
 @Service
 public interface UserService {
@@ -14,7 +15,7 @@ public interface UserService {
      *
      * @param user 存有user数据
      */
-    public User save(User user);
+    User save(User user);
 
     /**
      * 保存用户
@@ -49,7 +50,7 @@ public interface UserService {
      * @param studentId
      * @return
      */
-    User getUserToCheckByStudentId(String studentId);
+    User getUserByStudentId(String studentId);
 
     /**
      * 通过邮箱查询用于认证的用户信息
@@ -57,7 +58,15 @@ public interface UserService {
      * @param email
      * @return
      */
-    User getUserToCheckByPhone(String email);
+    User getUserByPhone(String email);
+
+
+    /**
+     * 获得用户列表
+     *
+     * @return
+     */
+    List<User> listUser();
 
 
     /**
@@ -79,13 +88,6 @@ public interface UserService {
     User updatePoints(User user);
 
 
-    /**
-     * 获取用户所有的积分
-     *
-     * @param studentId
-     * @return
-     */
-    User getUserPoints(String studentId);
 
 
     /**
@@ -123,4 +125,13 @@ public interface UserService {
      * @return
      */
     boolean checkPhone(String phone);
+
+
+    /**
+     * 获取用户名
+     *
+     * @param studentId
+     * @return
+     */
+    User getUserInfo(String studentId);
 }

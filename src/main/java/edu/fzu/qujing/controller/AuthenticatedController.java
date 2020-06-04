@@ -37,7 +37,7 @@ public class AuthenticatedController {
             @ApiImplicitParam(value = "密码",name = "password",dataType = "string",required = true)})
     @ApiResponses({
             @ApiResponse(code = 200,message = "success"),
-            @ApiResponse(code = 401,message = "Username or password incorrect"),
+            @ApiResponse(code = 400,message = "Username or password incorrect"),
             @ApiResponse(code = 403,message = "Account is frozen to 封禁时间",
                     examples = @Example({@ExampleProperty(value = "Account is frozen to 2020-07-02 17:24:25")})),
             @ApiResponse(code = 404,message = "Account does not exist")
@@ -49,6 +49,7 @@ public class AuthenticatedController {
                                         @ApiIgnore HttpServletResponse response)  {
         ResponseEntity<String> status =
                 authenticatedService.loginByStudentId(map.get("username"),map.get("password"),response);
+        System.out.println(map.get("username"));
         return status;
     }
 
@@ -59,7 +60,7 @@ public class AuthenticatedController {
             @ApiImplicitParam(value = "密码",name = "password",dataType = "string",required = true)})
     @ApiResponses({
             @ApiResponse(code = 200,message = "success"),
-            @ApiResponse(code = 401,message = "Username or password incorrect"),
+            @ApiResponse(code = 400,message = "Username or password incorrect"),
             @ApiResponse(code = 403,message = "Account is frozen to 封禁时间",
                     examples = @Example({@ExampleProperty(value = "Account is frozen to 2020-07-02 17:24:25")})),
             @ApiResponse(code = 404,message = "Account does not exist")
@@ -71,6 +72,7 @@ public class AuthenticatedController {
                                                    @ApiIgnore HttpServletResponse response)  {
         ResponseEntity<String> status =
                 authenticatedService.loginByPhone(map.get("phone"),map.get("check"),response);
+
         return status;
     }
 
@@ -236,4 +238,40 @@ public class AuthenticatedController {
         }
         return ResponseEntity.status(404).body("false");
     }
+
+
+
+    @ApiOperation(value = "检查手机号是否存在接口")
+    @ApiImplicitParam(value = "手机号", name = "phone", dataType = "string", required = true)
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "true"),
+            @ApiResponse(code = 404, message = "false")
+    })
+    @SystemControllerLog("检查手机号是否存")
+    @GetMapping("/checkPhone")
+    public ResponseEntity<String> checkPhone(@ApiIgnore @RequestBody Map<String,String> map) {
+        if(userService.checkPhone(map.get("phone"))){
+            return ResponseEntity.ok("true");
+        }
+        return ResponseEntity.ok("false");
+    }
+
+
+    //缺少检查Redis内是否存在
+
+    @ApiOperation(value = "检查学号是否存在接口")
+    @ApiImplicitParam(value = "学号", name = "studentId", dataType = "string", required = true)
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "true"),
+            @ApiResponse(code = 404, message = "false")
+    })
+    @SystemControllerLog("检查学号是否存在")
+    @GetMapping("/checkStudentId")
+    public ResponseEntity<String> checkStudentId(@ApiIgnore @RequestBody Map<String,String> map) {
+        if(userService.checkStudentId(map.get("studentId"))){
+            return ResponseEntity.ok("true");
+        }
+        return ResponseEntity.ok("false");
+    }
+
 }

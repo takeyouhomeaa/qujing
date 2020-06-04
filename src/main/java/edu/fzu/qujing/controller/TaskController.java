@@ -2,7 +2,9 @@ package edu.fzu.qujing.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import edu.fzu.qujing.annotation.SystemControllerLog;
+import edu.fzu.qujing.bean.DetailTask;
 import edu.fzu.qujing.bean.Task;
+import edu.fzu.qujing.service.DetailTaskService;
 import edu.fzu.qujing.service.TaskService;
 import edu.fzu.qujing.util.JwtUtil;
 import io.swagger.annotations.*;
@@ -16,6 +18,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author ozg
+ */
 @Api(tags = "任务相关操作")
 @RestController
 @RequestMapping("/task")
@@ -24,7 +29,8 @@ public class TaskController {
     @Autowired
     TaskService taskService;
 
-
+    @Autowired
+    DetailTaskService detailTaskService;
 
 
 
@@ -146,9 +152,10 @@ public class TaskController {
     @ApiOperation(value = "获取未接受任务的数量",notes = "每页是10条记录")
     @SystemControllerLog("获取未接受任务的数量")
     @GetMapping("/getCount/unacceptedTask")
-    public Map<String,Integer> getCountToUnacceptedTask() {
+    public Map<String,Integer> getCountToUnacceptedTask(@ApiIgnore HttpServletRequest request) {
+        String subject = JwtUtil.getSubject(request);
         Map<String,Integer> map = new HashMap<>(2);
-        Integer count = taskService.getCount(new QueryWrapper<Task>().eq("state", 1));
+        Integer count =  taskService.getCountToUnacceptedTask(subject);
         map.put("count",count);
         return map;
     }
@@ -158,10 +165,10 @@ public class TaskController {
     @SystemControllerLog("获取未被接受的任务列表")
     @ApiOperation(value = "获取未被接受的任务列表", notes = "URL传递pos,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
     @GetMapping("/listUnacceptedTaskByType/{pos}/{type}")
-    public List<Task> listUnacceptedTaskByType(@ApiIgnore @PathVariable("pos") Integer pos,
-                                               @ApiIgnore @PathVariable("type") Integer type,
-                                               @ApiIgnore HttpServletRequest request) {
-        return taskService.listUnacceptedTaskByType(pos,type,JwtUtil.getSubject(request));
+    public List<DetailTask> listUnacceptedTaskByType(@ApiIgnore @PathVariable("pos") Integer pos,
+                                                     @ApiIgnore @PathVariable("type") Integer type,
+                                                     @ApiIgnore HttpServletRequest request) {
+        return detailTaskService.listUnacceptedTaskByType(pos,type,JwtUtil.getSubject(request));
     }
 
 
@@ -181,10 +188,10 @@ public class TaskController {
     @SystemControllerLog("获取当前用户接受的任务列表")
     @ApiOperation(value = "获取当前用户接受的任务列表", notes = "URL传递pos,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
     @GetMapping("/listAccept/{pos}")
-    public List<Task> listAcceptToFinished(@ApiIgnore @PathVariable("pos") Integer pos,
+    public List<DetailTask> listAcceptToFinished(@ApiIgnore @PathVariable("pos") Integer pos,
                                  @ApiIgnore HttpServletRequest request) {
         String subject = JwtUtil.getSubject(request);
-        return taskService.listAccept(subject, pos);
+        return detailTaskService.listAccept(subject, pos);
     }
 
     @SystemControllerLog("获取用户接受任务的数量")
@@ -202,10 +209,10 @@ public class TaskController {
     @SystemControllerLog("获取当前用户发布的任务列表")
     @ApiOperation(value = "获取当前用户发布的任务列表", notes = "URL传递pos,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
     @GetMapping("/listPublish/{pos}")
-    public List<Task> listPublish(@PathVariable("pos") Integer pos,
+    public List<DetailTask> listPublish(@PathVariable("pos") Integer pos,
                                   @ApiIgnore HttpServletRequest request) {
         String subject = JwtUtil.getSubject(request);
-        return taskService.listPublish(subject, pos);
+        return detailTaskService.listPublish(subject, pos);
     }
 
     @SystemControllerLog("获取未接受任务的数量(按照类型)")
@@ -224,8 +231,8 @@ public class TaskController {
     @SystemControllerLog("获得详细的任务信息")
     @ApiOperation(value = "获得详细的任务信息", notes = "URL传递id,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
     @GetMapping("/getDetailTask/{id}")
-    public Task getDetailTask(@ApiIgnore @PathVariable("id") Integer id) {
-        return taskService.getDetailTask(id);
+    public DetailTask getDetailTask(@ApiIgnore @PathVariable("id") Integer id) {
+        return detailTaskService.getDetailTask(id);
     }
 
 

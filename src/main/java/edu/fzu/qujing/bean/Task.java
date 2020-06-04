@@ -47,7 +47,7 @@ public class Task implements Serializable {
     @ApiModelProperty("任务详细内容")
     private String content;
 
-    @ApiModelProperty("任务类型，1：快递代取，2：文件代送，3：文件代取，4：食堂代买，5：物品代购，6：其他")
+    @ApiModelProperty("任务类型，1：快递代取 ，2：文件代送，3：食堂代买，4：物品代购，5：其他")
     private Integer ttid;
 
     @ApiModelProperty("发布者id")

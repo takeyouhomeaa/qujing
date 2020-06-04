@@ -15,6 +15,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 
+/**
+ * @author ozg
+ */
 @ApiIgnore
 @RestController
 @ControllerAdvice(basePackages ={"edu.fzu.qujing.controller"})
@@ -24,7 +27,7 @@ public class ExceptionController {
 
     @ExceptionHandler(ShiroException.class)
     public ResponseEntity<String> shiroException(ShiroException ex) {
-        return ResponseEntity.status(401).body("Username or password incorrect");
+        return ResponseEntity.status(400).body("Username or password incorrect");
     }
 
 

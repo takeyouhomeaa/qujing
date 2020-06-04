@@ -47,8 +47,22 @@
 
 
 
-    <select id="getUserToCheck" resultType="edu.fzu.qujing.bean.User">
-        SELECT id,email,studentId,password,state,endTime,version
+    <select id="getUser" resultType="edu.fzu.qujing.bean.User">
+        SELECT
+        id,
+        email,
+        username,
+        phone,
+        studentId,
+        password,
+        points,
+        state,
+        endTime,
+        content,
+        receiveTaskNumber,
+        maliciousAcceptanceNumber,
+        reportedNumber,
+        version
         FROM user
         <where>
             <choose>
@@ -62,19 +76,7 @@
         </where>
     </select>
 
-    <select id="getUserPoints" resultType="edu.fzu.qujing.bean.User">
-        SELECT id,points,version
-        FROM user
-        WHERE studentId = #{studentId}
-    </select>
 
-    <select id="getNumberOfTasksAccepted" resultType="edu.fzu.qujing.bean.User">
-        SELECT id,receiveTaskNumber,version
-        FROM user
-        <where>
-            studentId = #{studentId}
-        </where>
-    </select>
 
     <select id="getPhone" resultType="edu.fzu.qujing.bean.User">
         SELECT id,phone
@@ -88,10 +90,25 @@
         WHERE studentId = #{studentId}
     </select>
 
-    <select id="getDetailUser" resultType="edu.fzu.qujing.bean.User">
-        SELECT id,username,points,content,receiveTaskNumber,maliciousAcceptanceNumber,reportedNumber,version
+
+
+    <select id="listUser" resultType="edu.fzu.qujing.bean.User">
+        SELECT
+        id,
+        email,
+        username,
+        phone,
+        studentId,
+        password,
+        points,
+        state,
+        endTime,
+        content,
+        receiveTaskNumber,
+        maliciousAcceptanceNumber,
+        reportedNumber,
+        version
         FROM user
-        WHERE studentId = #{studentId}
     </select>
 
 

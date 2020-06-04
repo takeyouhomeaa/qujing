@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import edu.fzu.qujing.bean.User;
 
+import java.util.List;
 
 
 public interface UserMapper extends BaseMapper<User> {
@@ -13,30 +14,25 @@ public interface UserMapper extends BaseMapper<User> {
      * @param user email和IDNumber
      * @return User
      */
-    User getUserToCheck(User user);
-
-
-    User getDetailUser(User user);
+    User getUser(User user);
 
     /**
+     * 获取用户列表
+     *
+     * @return
+     */
+    List<User> listUser();
+
+
+
+    /**
+     * 更改用户信息
+     *
      * @param user
      */
     void updateUser(User user);
 
 
-    /**
-     * 查询已接受的任务数
-     * @param studentId 学号
-     * @return
-     */
-    User getNumberOfTasksAccepted(String studentId);
-
-    /**
-     * 获得用户积分
-     * @param studentId
-     * @return
-     */
-    User getUserPoints(String studentId);
 
 
     /**
@@ -53,5 +49,9 @@ public interface UserMapper extends BaseMapper<User> {
      * @return
      */
     User getStudentId(String studentId);
+
+
+
+
 
 }

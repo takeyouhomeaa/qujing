@@ -9,6 +9,7 @@ import edu.fzu.qujing.service.PageService;
 import edu.fzu.qujing.service.UserService;
 import edu.fzu.qujing.util.*;
 import io.jsonwebtoken.Claims;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.crypto.hash.SimpleHash;
@@ -29,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
 
 @Service
+@Slf4j
 @Transactional(rollbackFor = Exception.class)
 public class AuthenticatedServiceImpl implements AuthenticatedService {
 
@@ -75,6 +77,7 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
         subject.login(token);
 
         String jwtToken = JwtUtil.creatJwt(JwtUtil.JWT_ID,userToCheck.getStudentId(),JwtUtil.JWT_EXPIRE);
+
         System.out.println(jwtToken);
         response.setHeader(JwtUtil.AUTH_HEADER,jwtToken);
         executor.execute(taskPageServiceImpl.cachePreload(userToCheck.getStudentId()));
@@ -94,7 +97,7 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
                                         HttpServletResponse response){
         Subject subject = SecurityUtils.getSubject();
         UsernamePasswordToken token  = new UsernamePasswordToken(username,password);
-        User userToCheck = userService.getUserToCheckByStudentId(username);
+        User userToCheck = userService.getUserByStudentId(username);
         return getStringResponseEntity(response, subject, token, userToCheck);
     }
 
@@ -103,7 +106,7 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
     public ResponseEntity<String> loginByPhone(String phone, String password, HttpServletResponse response) {
         Subject subject = SecurityUtils.getSubject();
         PhoneToken token  = new PhoneToken(phone,password);
-        User userToCheck = userService.getUserToCheckByPhone(phone);
+        User userToCheck = userService.getUserByPhone(phone);
         return getStringResponseEntity(response, subject, token, userToCheck);
     }
 
@@ -123,6 +126,7 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
                 Object obj = RedisUtil.get(key2);
                 User user = (User)obj;
                 userService.save(user);
+                RedisUtil.del(key2);
                 return true;
             }
         }

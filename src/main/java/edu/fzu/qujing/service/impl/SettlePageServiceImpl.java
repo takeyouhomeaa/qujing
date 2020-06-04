@@ -54,6 +54,7 @@ public class SettlePageServiceImpl implements PageService {
             key = "settle::listExpensesRecord("+ studentId+ ","+ 0 +")";
             RedisUtil.set(key, expenses);
             log.info("消费记录缓存模块加载完毕");
+            System.out.println("消费记录缓存模块加载完毕");
         };
         return runnable;
     }

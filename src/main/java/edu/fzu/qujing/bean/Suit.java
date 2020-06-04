@@ -20,6 +20,7 @@ public class Suit {
     @ApiModelProperty("举报内容")
     private String content;
 
+    @TableField("taskId")
     @ApiModelProperty("任务id")
     private Integer task;
 

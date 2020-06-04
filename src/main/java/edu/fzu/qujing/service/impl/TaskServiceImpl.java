@@ -1,12 +1,15 @@
 package edu.fzu.qujing.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import edu.fzu.qujing.bean.DelayTask;
+import edu.fzu.qujing.bean.DetailTask;
 import edu.fzu.qujing.bean.Task;
 import edu.fzu.qujing.bean.User;
 import edu.fzu.qujing.mapper.TaskMapper;
 import edu.fzu.qujing.service.CancelTaskService;
+import edu.fzu.qujing.service.PageService;
 import edu.fzu.qujing.service.TaskService;
 import edu.fzu.qujing.service.UserService;
 import edu.fzu.qujing.util.DelayQueueUtil;
@@ -20,8 +23,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
+import java.security.Key;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -77,15 +82,36 @@ public class TaskServiceImpl implements TaskService {
         return taskMapper.selectCount(queryWrapper);
     }
 
+    @Override
+    public Integer getCountToUnacceptedTask(String studentId) {
+        Integer temp1 = getCount(new QueryWrapper<Task>()
+                .eq("state", 1));
+        Integer temp2 = getCount((new QueryWrapper<Task>()
+                .eq("state", 1)
+                .eq("studentId", studentId)));
+        return (temp1 - temp2);
+    }
 
 
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
-    public List<Task> listUnacceptedTask(Integer pos) {
-        Page<Task> page = new Page<>(pos, PageUtil.PAGES);
-        IPage<Task> taskIPage = taskMapper.listSimpleTask(page, 1);
-        Map<String,Object> rs = new HashMap<>(2);
-        return taskIPage.getRecords();
+    public List<Task> listUnacceptedTask(Integer pos,String studentId) {
+
+        String key = "listUnacceptedTask";
+        List<Task> list = listTaskByCache(key, pos, studentId);
+        if(list != null){
+            return list;
+        }
+        Page<Task> page = new Page<>(pos, PAGE_SIZE);
+        IPage<Task> taskIPage = taskMapper.selectPage(page, new QueryWrapper<Task>()
+                .eq("state", 1)
+                .ne("senderid", studentId)
+                .orderByDesc("expedited")
+                .orderByAsc("deadline"));
+        List<Task> records = taskIPage.getRecords();
+
+        taskPageServiceImpl.saveCache(key, records, null);
+        return records;
     }
 
 
@@ -113,7 +139,7 @@ public class TaskServiceImpl implements TaskService {
 
         String studentId = map.get("studentId");
         Integer points = Integer.valueOf(map.get("points"));
-        User user = userService.getUserPoints(studentId);
+        User user = userService.getUserInfo(studentId);
         Integer userPoints = user.getPoints();
         if(points > userPoints ) {
             return null;
@@ -179,7 +205,7 @@ public class TaskServiceImpl implements TaskService {
 
 
     private void recoveryPoints(Integer id, String content, Integer type, Task task) {
-        User user = userService.getUserPoints(task.getSenderid());
+        User user = userService.getUserInfo(task.getSenderid());
         user.setPoints(task.getPoints() + user.getPoints());
 
         String key = "user::getUserPoints(" +user.getStudentId() + ")";
@@ -228,7 +254,7 @@ public class TaskServiceImpl implements TaskService {
     @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null")
     public Task confirmTaskToEmployer(Integer id,String studentId) {
         Task task = updateState(id,6);
-        User user = userService.getUserPoints(task.getReceiverid());
+        User user = userService.getUserInfo(task.getReceiverid());
         user.setPoints(task.getPoints() + user.getPoints());
 
         String key = "user::getUserPoints(" +user.getStudentId() + ")";
@@ -246,20 +272,65 @@ public class TaskServiceImpl implements TaskService {
 
 
     @Override
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')",unless = "#result == null")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
     public List<Task> listAccept(String studentId, Integer pos) {
-        Page<Task> page = new Page<>(pos, PageUtil.PAGES);
-        return taskMapper.listTaskByStudentId(page, null, studentId).getRecords();
+
+        String key = "listAccept::" + studentId;
+        List<Task> list = listTaskByCache(key, pos, studentId);
+        if(list != null){
+            return list;
+        }
+
+        Page<Task> page = new Page<>(pos, PAGE_SIZE);
+        List<Task> records = taskMapper.selectPage(page, new QueryWrapper<Task>()
+                .eq("receiverid", studentId)
+                .orderByAsc("time")).getRecords();
+
+        taskPageServiceImpl.saveCache(key, records, null);
+        return records;
+    }
+
+
+
+    @Override
+    public List<Task> listUnacceptedTaskByType(Integer pos, Integer type,String studentId) {
+        String key = "listUnacceptedTaskByType::" + type;
+        List<Task> list = listTaskByCache(key, pos, studentId);
+        if(list != null){
+            return list;
+        }
+        Page<Task> page = new Page<>(pos, PAGE_SIZE);
+        List<Task> records = taskMapper.selectPage(page, new QueryWrapper<Task>()
+                .eq("state", 1)
+                .eq("ttid", type)
+                .ne("senderid", studentId)
+                .orderByDesc("expedited")
+                .orderByAsc("deadline")).getRecords();
+
+        taskPageServiceImpl.saveCache(key, records, null);
+        return records;
     }
 
 
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
     public List<Task> listPublish(String studentId, Integer pos) {
-        Page<Task> page = new Page<>(pos, PageUtil.PAGES);
-        return taskMapper.listTaskByStudentId(page,  studentId,null).getRecords();
+        String key = "listPublish::" + studentId;
+        List<Task> list = listTaskByCache(key, pos, studentId);
+        if(list != null){
+            return list;
+        }
+
+        Page<Task> page = new Page<>(pos, PAGE_SIZE);
+        List<Task> records = taskMapper.selectPage(page, new QueryWrapper<Task>()
+                .eq("senderid", studentId)
+                .orderByAsc("time")).getRecords();
+
+        taskPageServiceImpl.saveCache(key, records, null);
+        return records;
     }
+
+
 
     public void taskResolve(DelayTask delayTask,Task task){
         String key = "getDetailTask(" + delayTask.getId() + ")";
@@ -296,7 +367,7 @@ public class TaskServiceImpl implements TaskService {
                 DelayTask delayTask = DelayQueueUtil.getDelayTaskToConfirm();
                 Integer id = delayTask.getId();
                 Task task = updateState(id,6);
-                User user = userService.getUserPoints(task.getReceiverid());
+                User user = userService.getUserInfo(task.getReceiverid());
                 user.setPoints(task.getPoints() + user.getPoints());
 
                 taskResolve(delayTask,task);
@@ -305,6 +376,7 @@ public class TaskServiceImpl implements TaskService {
         };
         return runnable;
     }
+
 
 
 

@@ -30,7 +30,7 @@ public class JwtRealm extends AuthorizingRealm {
         }
 
         String username = jwtToken.getPrincipal().toString();
-        User userToCheck = userService.getUserToCheckByStudentId(username);
+        User userToCheck = userService.getUserByStudentId(username);
         if(userToCheck == null) {
             throw new UnknownAccountException("User does not exist");
         }

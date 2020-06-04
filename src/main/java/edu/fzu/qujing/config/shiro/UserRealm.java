@@ -36,7 +36,7 @@ public class UserRealm extends AuthorizingRealm {
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
         UsernamePasswordToken token = (UsernamePasswordToken) authenticationToken;
         String username = token.getUsername();
-        User userToCheck  = userService.getUserToCheckByStudentId(username);
+        User userToCheck  = userService.getUserByStudentId(username);
 
         ByteSource credentialsSalt = ByteSource.Util.bytes(userToCheck.getStudentId());
         System.out.println("realm :" + userToCheck);

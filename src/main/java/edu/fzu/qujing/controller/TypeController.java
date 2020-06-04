@@ -13,6 +13,10 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.List;
 
+
+/**
+ * @author ozg
+ */
 @RestController
 @Api(tags = "类型相关操作")
 @RequestMapping("/type")

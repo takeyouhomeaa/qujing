@@ -14,6 +14,9 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author ozg
+ */
 @Api(tags = "用户的账户相关操作")
 @RestController
 @RequestMapping("/user")
@@ -43,50 +46,16 @@ public class UserController {
             return ResponseEntity.ok("Modified success");
         }
 
-        return ResponseEntity.status(403).body("Modified success");
+        return ResponseEntity.status(403).body("The old password does not match");
     }
 
 
 
-    @ApiOperation(value = "检查手机号是否存在接口")
-    @ApiImplicitParam(value = "手机号", name = "phone", dataType = "string", required = true)
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "true"),
-            @ApiResponse(code = 404, message = "false")
-    })
-    @SystemControllerLog("检查手机号是否存")
-    @GetMapping("/checkPhone")
-    public ResponseEntity<String> checkPhone(@ApiIgnore @RequestBody Map<String,String> map) {
-        if(userService.checkPhone(map.get("phone"))){
-            return ResponseEntity.ok("true");
-        }
-        return ResponseEntity.status(404).body("false");
-    }
-
-
-
-    @ApiOperation(value = "检查学号是否存在接口")
-    @ApiImplicitParam(value = "学号", name = "studentId", dataType = "string", required = true)
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "true"),
-            @ApiResponse(code = 404, message = "false")
-    })
-    @SystemControllerLog("检查学号是否存在")
-    @GetMapping("/checkStudentId")
-    public ResponseEntity<String> checkStudentId(@ApiIgnore @RequestBody Map<String,String> map) {
-        if(userService.checkStudentId(map.get("studentId"))){
-            return ResponseEntity.ok("true");
-        }
-        return ResponseEntity.status(404).body("false");
-    }
-
-
-
-    @ApiOperation(value = "获取用户积分")
-    @SystemControllerLog("获取用户积分")
-    @GetMapping("/getUserPoints")
+    @ApiOperation(value = "获取用户信息")
+    @SystemControllerLog("获取用户信息")
+    @GetMapping("/getUseInfo")
     public User getUserPoints(@ApiIgnore HttpServletRequest request) {
-        return userService.getUserPoints(JwtUtil.getSubject(request));
+        return userService.getUserInfo(JwtUtil.getSubject(request));
     }
 
 

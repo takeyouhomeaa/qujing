@@ -2,11 +2,14 @@ package edu.fzu.qujing.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import edu.fzu.qujing.bean.Task;
 import edu.fzu.qujing.bean.User;
 import edu.fzu.qujing.mapper.UserMapper;
 import edu.fzu.qujing.service.UserService;
+import edu.fzu.qujing.util.JwtUtil;
 import edu.fzu.qujing.util.MailUtil;
 import edu.fzu.qujing.util.RedisUtil;
+import io.jsonwebtoken.Claims;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.crypto.hash.SimpleHash;
@@ -20,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.naming.AuthenticationException;
+import java.util.List;
 
 @Service
 @CacheConfig(cacheNames = "user")
@@ -36,8 +40,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Caching(
             put = {
-                    @CachePut(key = "'getUserToCheckByStudentId(' + #user.studentId + ')'",unless = "#result == null"),
-                    @CachePut(key = "'getUserToCheckByPhone(' + #user.phone + ')'",unless = "#result == null")
+                    @CachePut(key = "'getUserByStudentId(' + #user.studentId + ')'",unless = "#result == null"),
+                    @CachePut(key = "'getUserByPhone(' + #user.phone + ')'",unless = "#result == null")
             }
     )
     public User save(User user) {
@@ -62,6 +66,7 @@ public class UserServiceImpl implements UserService {
         RedisUtil.set(key, user,60 * 10);
     }
 
+    //change
     /**
      * 对用户的接受任务数进行修改
      *
@@ -71,14 +76,15 @@ public class UserServiceImpl implements UserService {
     @Override
     @Caching(
             cacheable = {
-                    @Cacheable(key = "'getNumberOfTasksAccepted' + '(' + #studentId + ')'",unless = "#result == null")
+                    @Cacheable(key = "'getUserByStudentId(' + #result.studentId + ')'",unless = "#result == null")
             },
             put = {
-                    @CachePut(key = "'getNumberOfTasksAccepted' + '(' + #studentId + ')'",unless = "#result == null")
+                    @CachePut(key = "'getUserByStudentId(' + #result.studentId + ')'",unless = "#result == null"),
+                    @CachePut(key = "'getUserByPhone(' + #result.phone + ')'",unless = "#result == null")
             }
     )
     public User updateReceiveTaskNumber(String studentId, int count) {
-        User user = userMapper.getNumberOfTasksAccepted(studentId);
+        User user = getUserByStudentId(studentId);
         user.setReceiveTaskNumber(user.getReceiveTaskNumber() + count);
         userMapper.updateById(user);
         return user;
@@ -91,20 +97,21 @@ public class UserServiceImpl implements UserService {
      * @return 用户接受的任务数
      */
     @Override
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
+    @Cacheable(key = "'getUserByStudentId(' + #studentId + ')'",unless = "#result == null")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
     public User getReceiveTaskNumber(String studentId) {
-        User user = userMapper.getNumberOfTasksAccepted(studentId);
+        User user = getUserByStudentId(studentId);
+        user.setPassword(null);
         return user;
     }
 
     @Override
     @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
-    public User getUserToCheckByStudentId(String studentId) {
+    public User getUserByStudentId(String studentId) {
         User user = new User();
         user.setStudentId(studentId);
-        return  userMapper.getUserToCheck(user);
+        return  userMapper.getUser(user);
     }
 
     /**
@@ -115,10 +122,10 @@ public class UserServiceImpl implements UserService {
     @Override
     @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
-    public User getUserToCheckByPhone(String phone) {
+    public User getUserByPhone(String phone) {
         User user = new User();
         user.setPhone(phone);
-        return userMapper.getUserToCheck(user);
+        return userMapper.getUser(user);
 
     }
 
@@ -132,15 +139,14 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Caching(
-            cacheable = {
-                    @Cacheable(key = "'getUserToCheckByStudentId(' + #studentId + ')'",unless = "#result == null")
-            },
             put = {
-                    @CachePut(key = "'getUserToCheckByStudentId(' + #studentId + ')'",unless = "#result == null")
+                    @CachePut(key = "'getUserByStudentId(' + #result.studentId + ')'",unless = "#result == null"),
+                    @CachePut(key = "'getUserByPhone(' + #result.phone + ')'",unless = "#result == null")
             }
     )
     public User updateState(String studentId,Integer state) {
-        User userToCheck = getUserToCheckByStudentId(studentId);
+        User userToCheck = getUserByStudentId(studentId);
+        userToCheck.setState(state);
         userMapper.updateById(userToCheck);
        return userToCheck;
     }
@@ -152,23 +158,17 @@ public class UserServiceImpl implements UserService {
      * @return
      */
     @Override
-    @CachePut(key = "'getUserPoints(' + #user.studentId +')'",unless = "#result == null")
+    @Caching(
+            put = {
+                    @CachePut(key = "'getUserByStudentId(' + #result.studentId + ')'",unless = "#result == null"),
+                    @CachePut(key = "'getUserByPhone(' + #result.phone + ')'",unless = "#result == null")
+            }
+    )
     public User updatePoints(User user) {
         userMapper.updateById(user);
         return user;
     }
 
-    /**
-     * 获取用户所有的积分
-     *
-     * @param studentId
-     * @return
-     */
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
-    @Override
-    public User getUserPoints(String studentId) {
-        return userMapper.getUserPoints(studentId);
-    }
 
 
     /**
@@ -179,14 +179,14 @@ public class UserServiceImpl implements UserService {
      */
     @Caching(
             put = {
-                    @CachePut(cacheNames = "user",key = "'getUserToCheckByPhone(' + #result.phone + ')'",unless = "#result == null"),
-                    @CachePut(cacheNames = "user",key = "'getUserToCheckByStudentId(' + #studentId + ')'",unless = "#result == null")
+                    @CachePut(cacheNames = "user",key = "'getUserByPhone(' + #result.phone + ')'",unless = "#result == null"),
+                    @CachePut(cacheNames = "user",key = "'getUserByStudentId(' + #result.studentId + ')'",unless = "#result == null")
             }
     )
     @Override
     public User updatePassword(String studentId,String oldPwd,String newPwd) {
 
-        User user = getUserToCheckByStudentId(studentId);
+        User user = getUserByStudentId(studentId);
         ByteSource credentialsSalt = ByteSource.Util.bytes(studentId);
         String oldPassword = new SimpleHash("MD5", oldPwd,
                 credentialsSalt, 1024).toBase64();
@@ -208,15 +208,15 @@ public class UserServiceImpl implements UserService {
     @Override
     @Caching(
         put = {
-                @CachePut(cacheNames = "user",key = "'getUserToCheckByPhone(' + #phone + ')'",unless = "#result == null"),
-                @CachePut(cacheNames = "user",key = "'getUserToCheckByStudentId(' + #result.studentId + ')'",unless = "#result == null")
+                @CachePut(cacheNames = "user",key = "'getUserByPhone(' + #result.phone + ')'",unless = "#result == null"),
+                @CachePut(cacheNames = "user",key = "'getUserByStudentId(' + #result.studentId + ')'",unless = "#result == null")
         }
     )
     public User updatePassword(String phone, String newPwd) {
         if(!RedisUtil.hasKey("")){
             return null;
         }
-        User user = getUserToCheckByPhone(phone);
+        User user = getUserByPhone(phone);
         ByteSource credentialsSalt = ByteSource.Util.bytes(user.getStudentId());
         String newPassword = new SimpleHash("MD5", newPwd,
                 credentialsSalt, 1024).toBase64();
@@ -228,9 +228,15 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
+    @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
+    public List<User> listUser() {
+        return userMapper.listUser();
+    }
+
 
     //后期使用布隆过滤器实现该方法
-    
+
     /**
      * 检查手机号是否存在
      *
@@ -263,5 +269,11 @@ public class UserServiceImpl implements UserService {
         return false;
     }
 
-
+    @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
+    public User getUserInfo(String studentId) {
+        User user = getUserByStudentId(studentId);
+        user.setPassword(null);
+        return user;
+    }
 }

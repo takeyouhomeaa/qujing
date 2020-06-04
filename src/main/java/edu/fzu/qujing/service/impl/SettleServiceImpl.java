@@ -37,7 +37,7 @@ public class SettleServiceImpl implements SettleService {
 
     @Override
     public void updatePoints(String studentId, Integer amount) {
-        User user = userService.getUserPoints(studentId);
+        User user = userService.getUserInfo(studentId);
         user.setStudentId(studentId);
         user.setPoints(user.getPoints() + amount * 100);
         userService.updatePoints(user);
@@ -109,7 +109,16 @@ public class SettleServiceImpl implements SettleService {
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED, readOnly = true)
     public List<Expenses> listExpensesRecord(String studentId, Integer pos) {
-        return expensesMapper.listExpense(studentId,new Page<Expenses>(pos,PageUtil.PAGES)).getRecords();
+        String key = "settle::listExpensesRecord("+ studentId+ ","+ pos +")";
+        if(RedisUtil.hasKey(key)){
+            return (List<Expenses>) RedisUtil.get(key);
+        }
+        List<Expenses> records = expensesMapper.listExpense(studentId,
+                new Page<Expenses>(pos, PageUtil.PAGE_SIZE)).getRecords();
+        if(pos != 0) {
+            RedisUtil.set(key, records, 10 * 60);
+        }
+        return records;
     }
 
 
@@ -121,8 +130,18 @@ public class SettleServiceImpl implements SettleService {
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED, readOnly = true)
     public List<Recharge> listRecharheRecord(String studentId, Integer pos) {
+        String key = "settle::listRecharheRecord("+ studentId+ ","+ pos +")";
+        if(RedisUtil.hasKey(key)){
+            return (List<Recharge>) RedisUtil.get(key);
+        }
+        List<Recharge> records = rechargeMapper.listRechargeRecord(studentId,
+                new Page<Recharge>(pos, PageUtil.PAGE_SIZE)).getRecords();
 
-        return rechargeMapper.listRechargeRecord(studentId,new Page<Recharge>(pos,PageUtil.PAGES)).getRecords();
+        if(pos != 0) {
+            RedisUtil.set(key, records, 10 * 60);
+        }
+
+        return records;
     }
 
 

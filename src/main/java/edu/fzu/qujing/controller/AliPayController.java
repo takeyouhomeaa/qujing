@@ -78,11 +78,8 @@ public class AliPayController {
 
     @ApiResponses({
             @ApiResponse(code = 200, message = "Withdraw success"),
-            @ApiResponse(code = 201, message = "没有这个返回值"),
             @ApiResponse(code = 400, message = "Withdraw fail"),
-            @ApiResponse(code = 401, message = "没有这个返回值"),
-            @ApiResponse(code = 403, message = "没有这个返回值"),
-            @ApiResponse(code = 401, message = "没有这个返回值")
+
     })
     @SystemControllerLog("提现接口")
     @PutMapping("/withdraw")

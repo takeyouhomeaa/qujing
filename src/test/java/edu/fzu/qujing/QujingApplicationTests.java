@@ -28,9 +28,15 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import springfox.documentation.spring.web.json.Json;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @SpringBootTest
 class QujingApplicationTests {
@@ -41,6 +47,12 @@ class QujingApplicationTests {
 
     }
 
-
+    public static void main(String[] args) throws IOException {
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
+                Objects.requireNonNull(ClassLoader.getSystemResourceAsStream("static//sensi_words.txt"))
+                , StandardCharsets.UTF_8));
+        bufferedReader.readLine();
+        System.out.println(bufferedReader.readLine());
+    }
 
 }

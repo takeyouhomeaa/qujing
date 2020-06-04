@@ -92,24 +92,22 @@ public interface TaskService {
      * 雇主取消任务
      *
      * @param id 任务ID
-     * @param studentId
      * @param content 理由
      * @param type 取消类型
      * @return
      */
-    public Task cancelTaskToEmployer(Integer id,String studentId ,String content, String type);
+    public Task cancelTaskToEmployer(Integer id ,String content, String type);
 
 
     /**
      * 雇员取消任务
      *
      * @param id 任务ID
-     * @param studentId
      * @param content 理由
      * @param type 取消类型
      * @return
      */
-    public Task cancelTaskToEmployee(Integer id, String studentId ,String content, String type);
+    public Task cancelTaskToEmployee(Integer id ,String content, String type);
 
 
     /**
@@ -129,8 +127,16 @@ public interface TaskService {
      * @param studentId
      * @return
      */
-    public Task confirmTaskToEmployer(Integer id,String studentId);
+    Task confirmTaskToEmployer(Integer id, String studentId);
 
+
+    /**
+     * 检查任务是否存在
+     *
+     * @param id
+     * @return
+     */
+    boolean checkTask(Integer id);
 
     /**
      * 任务10分钟未有人接受,自动取消

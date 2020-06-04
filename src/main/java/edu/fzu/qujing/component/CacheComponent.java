@@ -17,11 +17,29 @@ public class CacheComponent implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        delayiTaskIit();
+       // bloomFilterInit();
+        delayiTaskInit();
         RedisUtil.flushdb();
     }
 
-    private void delayiTaskIit() {
+    private void bloomFilterInit() {
+        String key = "bloomFilterToUser";
+        BloomFilter bloomFilterToUser = BloomFilterUtil.readFilterFromCache(key);
+        if(bloomFilterToUser != null) {
+            BloomFilterUtil.setBloomFilterToUser(bloomFilterToUser);
+        }
+
+        key = "bloomFilterToTask";
+        BloomFilter bloomFilterToTask = BloomFilterUtil.readFilterFromCache(key);
+        if(bloomFilterToUser != null) {
+            BloomFilterUtil.setBloomFilterToTask(bloomFilterToTask);
+        }
+
+
+        log.info("布隆过滤器加载完毕");
+    }
+
+    private void delayiTaskInit() {
 
         String key1 = "delayQueueToCancel";
         String key2 = "delayQueueToConfirm";

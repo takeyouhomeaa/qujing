@@ -126,7 +126,8 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
                 Object obj = RedisUtil.get(key2);
                 User user = (User)obj;
                 userService.save(user);
-                RedisUtil.del(key2);
+                String key3 = "toBeActivated::" + user.getStudentId();
+                RedisUtil.del(key2,key3);
                 return true;
             }
         }
@@ -171,7 +172,7 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
     @Override
     public boolean verifyCaptchaToForgetPwd(String check, String phone) {
         String key = "forgetPwd::" + phone;
-        RedisUtil.set("forgetPwd::flag", "true",120);
+        RedisUtil.set("forgetPwd::flag" + phone, "true",180);
         return verifyCaptcha(check, key);
     }
 

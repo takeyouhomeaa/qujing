@@ -73,13 +73,11 @@ public class TaskController {
     @SystemControllerLog("雇主取消任务")
     @DeleteMapping("/sender/cancel/{id}")
     public ResponseEntity<String> senderCancelTask(@ApiIgnore @PathVariable("id") Integer id,
-                                                   @ApiIgnore @RequestBody Map<String, String> map,
-                                                   @ApiIgnore HttpServletRequest request) {
+                                                   @ApiIgnore @RequestBody Map<String, String> map) {
         System.out.println("方法被执行");
-        String subject = JwtUtil.getSubject(request);
         String content = map.get("content");
         String type = map.get("type");
-        taskService.cancelTaskToEmployer(id,subject , content, type);
+        taskService.cancelTaskToEmployer(id, content, type);
         return ResponseEntity.ok("Cancel success");
     }
 
@@ -102,7 +100,7 @@ public class TaskController {
         String subject = JwtUtil.getSubject(request);
         String content = map.get("content");
         String type = map.get("type");
-        taskService.cancelTaskToEmployee(id, subject, content, type);
+        taskService.cancelTaskToEmployee(id, content, type);
         return ResponseEntity.ok("Cancel success");
     }
 

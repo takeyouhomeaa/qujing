@@ -30,10 +30,14 @@ public class PhoneRealm extends AuthorizingRealm {
         PhoneToken token = (PhoneToken) authenticationToken;
         Object principal = token.getPrincipal();
         String phone = (String) principal;
-        Object obj = RedisUtil.get("login::" + phone);
-        String code = (String)obj;
+        String key = "login::" + phone;
+        if(RedisUtil.hasKey(key)) {
+            Object obj = RedisUtil.get("login::" + phone);
+            String code = (String)obj;
+            return new SimpleAuthenticationInfo(phone, code,getName());
+        }
 
+        return null;
 
-        return new SimpleAuthenticationInfo(phone, code,getName());
     }
 }

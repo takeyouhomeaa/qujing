@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import edu.fzu.qujing.bean.Task;
 import edu.fzu.qujing.bean.User;
+import edu.fzu.qujing.component.BloomFilter;
 import edu.fzu.qujing.mapper.UserMapper;
 import edu.fzu.qujing.service.UserService;
+import edu.fzu.qujing.util.BloomFilterUtil;
 import edu.fzu.qujing.util.JwtUtil;
 import edu.fzu.qujing.util.MailUtil;
 import edu.fzu.qujing.util.RedisUtil;
@@ -51,6 +53,8 @@ public class UserServiceImpl implements UserService {
         user.setPassword(pwd);
         user.setState(1);
         userMapper.insert(user);
+        BloomFilterUtil.addIfNotExist(BloomFilterUtil.getBloomFilterToUser(),user.getStudentId());
+        BloomFilterUtil.addIfNotExist(BloomFilterUtil.getBloomFilterToUser(),user.getPhone());
         return user;
     }
 
@@ -63,6 +67,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public void saveUser(User user) {
         String key = "toBeActivated::" + user.getPhone();
+        RedisUtil.set(key, user,60 * 10);
+        key = "toBeActivated::" + user.getStudentId();
         RedisUtil.set(key, user,60 * 10);
     }
 
@@ -84,6 +90,9 @@ public class UserServiceImpl implements UserService {
             }
     )
     public User updateReceiveTaskNumber(String studentId, int count) {
+        if(!checkStudentId(studentId)){
+            throw new RuntimeException("The server is busy");
+        }
         User user = getUserByStudentId(studentId);
         user.setReceiveTaskNumber(user.getReceiveTaskNumber() + count);
         userMapper.updateById(user);
@@ -100,6 +109,9 @@ public class UserServiceImpl implements UserService {
     @Cacheable(key = "'getUserByStudentId(' + #studentId + ')'",unless = "#result == null")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
     public User getReceiveTaskNumber(String studentId) {
+        if(!checkStudentId(studentId)){
+            throw new RuntimeException("The server is busy");
+        }
         User user = getUserByStudentId(studentId);
         user.setPassword(null);
         return user;
@@ -109,6 +121,9 @@ public class UserServiceImpl implements UserService {
     @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
     public User getUserByStudentId(String studentId) {
+        if(!checkStudentId(studentId)){
+            throw new RuntimeException("The server is busy");
+        }
         User user = new User();
         user.setStudentId(studentId);
         return  userMapper.getUser(user);
@@ -123,6 +138,9 @@ public class UserServiceImpl implements UserService {
     @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
     public User getUserByPhone(String phone) {
+        if(!checkPhone(phone)){
+            throw new RuntimeException("The server is busy");
+        }
         User user = new User();
         user.setPhone(phone);
         return userMapper.getUser(user);
@@ -165,6 +183,9 @@ public class UserServiceImpl implements UserService {
             }
     )
     public User updatePoints(User user) {
+        if(!checkStudentId(user.getStudentId())){
+            throw new RuntimeException("The server is busy");
+        }
         userMapper.updateById(user);
         return user;
     }
@@ -185,6 +206,9 @@ public class UserServiceImpl implements UserService {
     )
     @Override
     public User updatePassword(String studentId,String oldPwd,String newPwd) {
+        if(!checkStudentId(studentId)){
+            throw new RuntimeException("The server is busy");
+        }
 
         User user = getUserByStudentId(studentId);
         ByteSource credentialsSalt = ByteSource.Util.bytes(studentId);
@@ -213,9 +237,12 @@ public class UserServiceImpl implements UserService {
         }
     )
     public User updatePassword(String phone, String newPwd) {
-        if(!RedisUtil.hasKey("")){
-            return null;
+        String key = "forgetPwd::flag" + phone;
+        if(!checkPhone(phone)||!RedisUtil.hasKey(key)){
+            throw new RuntimeException("The server is busy");
         }
+        RedisUtil.del(key);
+
         User user = getUserByPhone(phone);
         ByteSource credentialsSalt = ByteSource.Util.bytes(user.getStudentId());
         String newPassword = new SimpleHash("MD5", newPwd,
@@ -235,7 +262,6 @@ public class UserServiceImpl implements UserService {
     }
 
 
-    //后期使用布隆过滤器实现该方法
 
     /**
      * 检查手机号是否存在
@@ -244,10 +270,10 @@ public class UserServiceImpl implements UserService {
      * @return
      */
     @Override
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     public boolean checkPhone(String phone) {
-        User user = userMapper.getPhone(phone);
-        if(user != null) {
+        String key = "toBeActivated::" + phone;
+        if(RedisUtil.hasKey(key) || BloomFilterUtil.contains(BloomFilterUtil.getBloomFilterToUser(),phone))
+        {
             return true;
         }
         return false;
@@ -260,10 +286,10 @@ public class UserServiceImpl implements UserService {
      * @return
      */
     @Override
-    @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     public boolean checkStudentId(String studentId) {
-        User user = userMapper.getStudentId(studentId);
-        if(user != null) {
+        String key = "toBeActivated::" + studentId;
+        if(RedisUtil.hasKey(key) || BloomFilterUtil.contains(BloomFilterUtil.getBloomFilterToUser(),studentId))
+        {
             return true;
         }
         return false;
@@ -272,6 +298,9 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
     public User getUserInfo(String studentId) {
+        if(!checkStudentId(studentId)){
+            throw new RuntimeException("The server is busy");
+        }
         User user = getUserByStudentId(studentId);
         user.setPassword(null);
         return user;

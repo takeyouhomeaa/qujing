@@ -11,6 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+
+/**
+ * @author ozg
+ */
 @Service
 @CacheConfig(cacheNames = "type")
 @Transactional(rollbackFor = Exception.class)

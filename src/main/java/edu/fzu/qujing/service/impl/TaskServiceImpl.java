@@ -12,6 +12,7 @@ import edu.fzu.qujing.service.CancelTaskService;
 import edu.fzu.qujing.service.PageService;
 import edu.fzu.qujing.service.TaskService;
 import edu.fzu.qujing.service.UserService;
+import edu.fzu.qujing.util.BloomFilterUtil;
 import edu.fzu.qujing.util.DelayQueueUtil;
 import edu.fzu.qujing.util.PageUtil;
 import edu.fzu.qujing.util.RedisUtil;
@@ -33,6 +34,11 @@ import java.util.Map;
 import static edu.fzu.qujing.util.PageUtil.PAGE_SIZE;
 import static edu.fzu.qujing.util.PageUtil.PRELOAD_POS;
 
+
+
+/**
+ * @author ozg
+ */
 @Slf4j
 @Service
 @CacheConfig(cacheNames = "task")
@@ -78,12 +84,17 @@ public class TaskServiceImpl implements TaskService {
 
 
     @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
     public Integer getCount(QueryWrapper queryWrapper) {
         return taskMapper.selectCount(queryWrapper);
     }
 
     @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
     public Integer getCountToUnacceptedTask(String studentId) {
+        if(!userService.checkStudentId(studentId)) {
+            throw new RuntimeException("The server is busy");
+        }
         Integer temp1 = getCount(new QueryWrapper<Task>()
                 .eq("state", 1));
         Integer temp2 = getCount((new QueryWrapper<Task>()
@@ -96,7 +107,9 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
     public List<Task> listUnacceptedTask(Integer pos,String studentId) {
-
+        if(!userService.checkStudentId(studentId)) {
+            throw new RuntimeException("The server is busy");
+        }
         String key = "listUnacceptedTask";
         List<Task> list = listTaskByCache(key, pos, studentId);
         if(list != null){
@@ -119,6 +132,9 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Cacheable(key = "#root.methodName + '(' + #root.args + ')'",unless = "#result == null")
     public Task getDetailTask(Integer id) {
+        if(!checkTask(id)){
+            throw new RuntimeException("The server is busy");
+        }
         Task task = new Task();
         task.setId(id);
         Task taskById = taskMapper.getTaskById(task);
@@ -165,12 +181,18 @@ public class TaskServiceImpl implements TaskService {
 
         taskPageServiceImpl.delCache("listUnacceptedTask", id);
 
+        BloomFilterUtil.addIfNotExist(BloomFilterUtil.getBloomFilterToTask(), String.valueOf(id));
+
         DelayQueueUtil.addDelayTaskToCancel(new DelayTask(id,studentId,1000 * 60 * 10));
         return task;
     }
 
     @Override
     public Task updateState(Integer id,Integer state) {
+        if(!checkTask(id)){
+            throw new RuntimeException("The server is busy");
+        }
+
         Task task = taskMapper.selectById(id);
         task.setState(state);
         taskMapper.updateById(task);
@@ -182,7 +204,11 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null or #result.id == null")
     public Task acceptTask(Integer id,String studentId) {
+        if(!checkTask(id)){
+            throw new RuntimeException("The server is busy");
+        }
         User user = userService.getReceiveTaskNumber(studentId);
+
         if(user.getReceiveTaskNumber() == 3) {
             return new Task();
         }
@@ -206,6 +232,7 @@ public class TaskServiceImpl implements TaskService {
 
     private void recoveryPoints(Integer id, String content, Integer type, Task task) {
         User user = userService.getUserInfo(task.getSenderid());
+
         user.setPoints(task.getPoints() + user.getPoints());
 
         String key = "user::getUserPoints(" +user.getStudentId() + ")";
@@ -214,13 +241,14 @@ public class TaskServiceImpl implements TaskService {
         }
 
         cancelTaskService.save(id, content, type);
+
     }
 
 
 
     @Override
     @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null or #result.id == null")
-    public Task cancelTaskToEmployer(Integer id,String studentId ,String content, String type) {
+    public Task cancelTaskToEmployer(Integer id,String content, String type) {
         Task task = updateState(id, 3);
         recoveryPoints(id, content, Integer.valueOf(type), task);
         DelayQueueUtil.removeDelayTaskToCancel(new DelayTask(id));
@@ -231,7 +259,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null or #result.id == null")
-    public Task cancelTaskToEmployee(Integer id,String studentId ,String content, String type) {
+    public Task cancelTaskToEmployee(Integer id ,String content, String type) {
         Task task = updateState(id, 4);
         recoveryPoints(id, content, Integer.valueOf(type), task);
         return task;
@@ -274,7 +302,9 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
     public List<Task> listAccept(String studentId, Integer pos) {
-
+        if(!userService.checkStudentId(studentId)){
+            throw new RuntimeException("The server is busy");
+        }
         String key = "listAccept::" + studentId;
         List<Task> list = listTaskByCache(key, pos, studentId);
         if(list != null){
@@ -294,6 +324,9 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public List<Task> listUnacceptedTaskByType(Integer pos, Integer type,String studentId) {
+        if(!userService.checkStudentId(studentId)){
+            throw new RuntimeException("The server is busy");
+        }
         String key = "listUnacceptedTaskByType::" + type;
         List<Task> list = listTaskByCache(key, pos, studentId);
         if(list != null){
@@ -315,6 +348,9 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED,readOnly = true)
     public List<Task> listPublish(String studentId, Integer pos) {
+        if(!userService.checkStudentId(studentId)){
+            throw new RuntimeException("The server is busy");
+        }
         String key = "listPublish::" + studentId;
         List<Task> list = listTaskByCache(key, pos, studentId);
         if(list != null){
@@ -343,6 +379,14 @@ public class TaskServiceImpl implements TaskService {
 
     }
 
+
+    @Override
+    public boolean checkTask(Integer id) {
+        if(BloomFilterUtil.contains(BloomFilterUtil.getBloomFilterToTask(), String.valueOf(id))){
+            return true;
+        }
+        return false;
+    }
 
     @Override
     public Runnable taskWasNotTaken() {

@@ -10,6 +10,7 @@ import edu.fzu.qujing.mapper.RechargeMapper;
 import edu.fzu.qujing.mapper.UserMapper;
 import edu.fzu.qujing.service.SettleService;
 import edu.fzu.qujing.service.UserService;
+import edu.fzu.qujing.util.BloomFilterUtil;
 import edu.fzu.qujing.util.PageUtil;
 import edu.fzu.qujing.util.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,11 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+
+
+/**
+ * @author ozg
+ */
 
 @Service
 @CacheConfig(cacheNames = "settle")
@@ -83,6 +89,7 @@ public class SettleServiceImpl implements SettleService {
         rechargeMapper.insert(recharge);
         List<Recharge> list = listRecharheRecord(recharge.getUserId(), 0);
         RedisUtil.set("settle::listRecharheRecord("+ recharge.getUserId()+ ","+ 0 +")", list);
+
         return recharge;
     }
 
@@ -96,6 +103,7 @@ public class SettleServiceImpl implements SettleService {
         expensesMapper.insert(expenses);
         List<Expenses> list = listExpensesRecord(expenses.getUserId(), 0);
         RedisUtil.set("settle::listExpensesRecord("+ expenses.getUserId()+ ","+ 0 +")", list);
+
         return expenses;
     }
 
@@ -109,6 +117,9 @@ public class SettleServiceImpl implements SettleService {
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED, readOnly = true)
     public List<Expenses> listExpensesRecord(String studentId, Integer pos) {
+        if(!userService.checkStudentId(studentId)){
+            throw new RuntimeException("The server is busy");
+        }
         String key = "settle::listExpensesRecord("+ studentId+ ","+ pos +")";
         if(RedisUtil.hasKey(key)){
             return (List<Expenses>) RedisUtil.get(key);
@@ -130,6 +141,9 @@ public class SettleServiceImpl implements SettleService {
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED, readOnly = true)
     public List<Recharge> listRecharheRecord(String studentId, Integer pos) {
+        if(!userService.checkStudentId(studentId)){
+            throw new RuntimeException("The server is busy");
+        }
         String key = "settle::listRecharheRecord("+ studentId+ ","+ pos +")";
         if(RedisUtil.hasKey(key)){
             return (List<Recharge>) RedisUtil.get(key);

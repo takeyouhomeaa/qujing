@@ -19,8 +19,8 @@ import java.util.Map;
  * @author ozg
  */
 @ApiIgnore
-@RestController
-@ControllerAdvice(basePackages ={"edu.fzu.qujing.controller"})
+//@RestController
+//@ControllerAdvice(basePackages ={"edu.fzu.qujing.controller"})
 public class ExceptionController {
     private static final Logger logger = LoggerFactory.getLogger(ExceptionController.class);
 

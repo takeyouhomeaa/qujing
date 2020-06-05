@@ -4,6 +4,7 @@ import edu.fzu.qujing.bean.FeedBack;
 import edu.fzu.qujing.mapper.FeedBackMapper;
 import edu.fzu.qujing.service.FeedBackService;
 import edu.fzu.qujing.service.UserService;
+import edu.fzu.qujing.util.SensitiveFilterUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,9 @@ public class FeedBackServiceImpl implements FeedBackService {
     @Override
     public FeedBack save(String studentId, Map<String, String> params) {
         FeedBack feedBack = new FeedBack();
-        feedBack.setContent(params.get("content"));
+        String content = params.get("content");
+        String filter = SensitiveFilterUtil.filter(content);
+        feedBack.setContent(filter);
         feedBack.setTask(Integer.valueOf(params.get("task")));
         feedBack.setType(1);
 

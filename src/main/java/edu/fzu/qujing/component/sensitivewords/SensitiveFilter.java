@@ -159,11 +159,4 @@ public class SensitiveFilter implements Serializable {
         }
     }
 
-
-    public static void main(String[] args) {
-        SensitiveFilter sensitiveFilter = new SensitiveFilter();
-        String s = sensitiveFilter.filter("粪便在哪啊,习近平在者,法轮功", '*');
-        System.out.println(s);
-
-    }
 }

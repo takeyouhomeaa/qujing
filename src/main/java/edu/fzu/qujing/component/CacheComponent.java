@@ -17,26 +17,34 @@ public class CacheComponent implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-       // bloomFilterInit();
         delayiTaskInit();
+        bloomFilterInit();
         RedisUtil.flushdb();
     }
 
     private void bloomFilterInit() {
         String key = "bloomFilterToUser";
-        BloomFilter bloomFilterToUser = BloomFilterUtil.readFilterFromCache(key);
+        BloomFilter bloomFilterToUser = BloomFilterUtil.readFilterFromFile(key);
         if(bloomFilterToUser != null) {
             BloomFilterUtil.setBloomFilterToUser(bloomFilterToUser);
         }
 
         key = "bloomFilterToTask";
-        BloomFilter bloomFilterToTask = BloomFilterUtil.readFilterFromCache(key);
+        BloomFilter bloomFilterToTask = BloomFilterUtil.readFilterFromFile(key);
         if(bloomFilterToUser != null) {
             BloomFilterUtil.setBloomFilterToTask(bloomFilterToTask);
         }
 
 
         log.info("布隆过滤器加载完毕");
+    }
+
+    private void saveBloomFilter() {
+        String key = "bloomFilterToUser";
+        BloomFilterUtil.saveFilterToFile(BloomFilterUtil.getBloomFilterToUser(),key);
+        key = "bloomFilterToTask";
+        BloomFilterUtil.saveFilterToFile(BloomFilterUtil.getBloomFilterToTask(),key);
+        log.info("布隆过滤器重新加载完成");
     }
 
     private void delayiTaskInit() {
@@ -53,6 +61,12 @@ public class CacheComponent implements ApplicationRunner {
         }
 
         log.info("延迟任务加载完毕");
+    }
+
+    private void saveDelayTask() {
+        RedisUtil.set("delayQueueToCancel", DelayQueueUtil.getDelayTaskToCancel());
+        RedisUtil.set("delayQueueToConfirm", DelayQueueUtil.getDelayQueueToConfirm());
+        log.info("延迟任务重新保存完成");
     }
 
     private void cachePreload(){

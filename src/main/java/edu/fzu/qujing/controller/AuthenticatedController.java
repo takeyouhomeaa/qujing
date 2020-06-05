@@ -245,12 +245,12 @@ public class AuthenticatedController {
     @ApiImplicitParam(value = "手机号", name = "phone", dataType = "string", required = true)
     @ApiResponses({
             @ApiResponse(code = 200, message = "true"),
-            @ApiResponse(code = 404, message = "false")
+            @ApiResponse(code = 200, message = "false")
     })
     @SystemControllerLog("检查手机号是否存")
     @GetMapping("/checkPhone")
-    public ResponseEntity<String> checkPhone(@ApiIgnore @RequestBody Map<String,String> map) {
-        if(userService.checkPhone(map.get("phone"))){
+    public ResponseEntity<String> checkPhone(String phone) {
+        if(userService.checkPhone(phone)){
             return ResponseEntity.ok("true");
         }
         return ResponseEntity.ok("false");
@@ -263,12 +263,12 @@ public class AuthenticatedController {
     @ApiImplicitParam(value = "学号", name = "studentId", dataType = "string", required = true)
     @ApiResponses({
             @ApiResponse(code = 200, message = "true"),
-            @ApiResponse(code = 404, message = "false")
+            @ApiResponse(code = 200, message = "false")
     })
     @SystemControllerLog("检查学号是否存在")
     @GetMapping("/checkStudentId")
-    public ResponseEntity<String> checkStudentId(@ApiIgnore @RequestBody Map<String,String> map) {
-        if(userService.checkStudentId(map.get("studentId"))){
+    public ResponseEntity<String> checkStudentId(String studentId) {
+        if(userService.checkStudentId(studentId)){
             return ResponseEntity.ok("true");
         }
         return ResponseEntity.ok("false");

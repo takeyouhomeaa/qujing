@@ -1,18 +1,22 @@
 package edu.fzu.qujing.component;
 
+import lombok.Data;
+
 import java.io.Serializable;
 import java.util.BitSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Data
 public class BloomFilter implements Serializable {
 
 
-    private final int[] seeds;
-    private final int size;
-    private final BitSet notebook;
-    private final MisjudgmentRate rate;
-    private final AtomicInteger useCount = new AtomicInteger(0);
-    private final Double autoClearRate;
+
+    private  int[] seeds;
+    private  int size;
+    private  BitSet notebook;
+    private  MisjudgmentRate rate;
+    private  AtomicInteger useCount = new AtomicInteger(0);
+    private  Double autoClearRate;
 
     /**
      * 默认中等程序的误判率：MisjudgmentRate.MIDDLE 以及不自动清空数据（性能会有少许提升）
@@ -24,6 +28,8 @@ public class BloomFilter implements Serializable {
     }
 
 
+
+
     /**
      * @param rate          一个枚举类型的误判率
      * @param dataCount     预期处理的数据规模，如预期用于处理1百万数据的查重，这里则填写1000000
@@ -31,6 +37,7 @@ public class BloomFilter implements Serializable {
      *                      当过滤器使用率达到100%时，则无论传入什么数据，都会认为在数据已经存在了
      *                      当希望过滤器使用率达到80%时自动清空重新使用，则传入0.8
      */
+
 
     public BloomFilter(MisjudgmentRate rate, int dataCount, Double autoClearRate) {
         long bitSize = rate.seeds.length * dataCount;

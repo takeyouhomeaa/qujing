@@ -7,15 +7,13 @@ import edu.fzu.qujing.bean.DelayTask;
 import edu.fzu.qujing.bean.DetailTask;
 import edu.fzu.qujing.bean.Task;
 import edu.fzu.qujing.bean.User;
+import edu.fzu.qujing.component.sensitivewords.SensitiveFilter;
 import edu.fzu.qujing.mapper.TaskMapper;
 import edu.fzu.qujing.service.CancelTaskService;
 import edu.fzu.qujing.service.PageService;
 import edu.fzu.qujing.service.TaskService;
 import edu.fzu.qujing.service.UserService;
-import edu.fzu.qujing.util.BloomFilterUtil;
-import edu.fzu.qujing.util.DelayQueueUtil;
-import edu.fzu.qujing.util.PageUtil;
-import edu.fzu.qujing.util.RedisUtil;
+import edu.fzu.qujing.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.*;
@@ -165,10 +163,13 @@ public class TaskServiceImpl implements TaskService {
 
         String key = "user::getUserPoints(" + user.getPhone() + ")";
         RedisUtil.set(key,user);
-
+        String content = map.get("content");
+        String name = map.get("name");
+        content = SensitiveFilterUtil.filter(content);
+        name = SensitiveFilterUtil.filter(name);
         Task task = new Task();
-        task.setName(map.get("name"));
-        task.setContent(map.get("content"));
+        task.setName(name);
+        task.setContent(content);
         task.setState(1);
         task.setPoints(points);
         task.setSenderid(studentId);
@@ -181,7 +182,8 @@ public class TaskServiceImpl implements TaskService {
 
         taskPageServiceImpl.delCache("listUnacceptedTask", id);
 
-        BloomFilterUtil.addIfNotExist(BloomFilterUtil.getBloomFilterToTask(), String.valueOf(id));
+        BloomFilterUtil.addIfNotExist(BloomFilterUtil.getBloomFilterToTask(),
+                String.valueOf(id),"bloomFilterToTask");
 
         DelayQueueUtil.addDelayTaskToCancel(new DelayTask(id,studentId,1000 * 60 * 10));
         return task;
@@ -249,8 +251,9 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null or #result.id == null")
     public Task cancelTaskToEmployer(Integer id,String content, String type) {
+        String filter = SensitiveFilterUtil.filter(content);
         Task task = updateState(id, 3);
-        recoveryPoints(id, content, Integer.valueOf(type), task);
+        recoveryPoints(id, filter, Integer.valueOf(type), task);
         DelayQueueUtil.removeDelayTaskToCancel(new DelayTask(id));
         return task;
     }
@@ -260,8 +263,9 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @CachePut(key = "'getDetailTask(' + #id + ')'",unless = "#result == null or #result.id == null")
     public Task cancelTaskToEmployee(Integer id ,String content, String type) {
+        String filter = SensitiveFilterUtil.filter(content);
         Task task = updateState(id, 4);
-        recoveryPoints(id, content, Integer.valueOf(type), task);
+        recoveryPoints(id, filter, Integer.valueOf(type), task);
         return task;
     }
 

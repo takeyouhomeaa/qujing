@@ -74,7 +74,7 @@ public class Log implements Serializable {
         for (Map.Entry<String, String[]> param : ((Map<String, String[]>) paramMap).entrySet()) {
             params.append(("".equals(params.toString()) ? "" : "&") + param.getKey() + "=");
             String paramValue = (param.getValue() != null && param.getValue().length > 0 ? param.getValue()[0] : "");
-            params.append(param.getKey().equals("password") ? "" : paramValue.substring(0, 50));
+            params.append("password".equals(param.getKey()) ? "" : paramValue);
         }
         this.params = params.toString();
     }

@@ -53,8 +53,10 @@ public class UserServiceImpl implements UserService {
         user.setPassword(pwd);
         user.setState(1);
         userMapper.insert(user);
-        BloomFilterUtil.addIfNotExist(BloomFilterUtil.getBloomFilterToUser(),user.getStudentId());
-        BloomFilterUtil.addIfNotExist(BloomFilterUtil.getBloomFilterToUser(),user.getPhone());
+        BloomFilterUtil.addIfNotExist(BloomFilterUtil.getBloomFilterToUser(),
+                user.getStudentId(),"bloomFilterToUser");
+        BloomFilterUtil.addIfNotExist(BloomFilterUtil.getBloomFilterToUser()
+                ,user.getPhone(),"bloomFilterToUser");
         return user;
     }
 

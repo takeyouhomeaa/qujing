@@ -18,9 +18,11 @@ import edu.fzu.qujing.service.TaskService;
 import edu.fzu.qujing.service.TypeService;
 import edu.fzu.qujing.service.UserService;
 import edu.fzu.qujing.util.BloomFilterUtil;
+import edu.fzu.qujing.util.MQUtil;
 import edu.fzu.qujing.util.PhoneUtil;
 import edu.fzu.qujing.util.RedisUtil;
 import org.junit.jupiter.api.Test;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.annotation.CachePut;
@@ -37,10 +39,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeoutException;
 
 @SpringBootTest
 class QujingApplicationTests {
 
+    @Autowired
+    RabbitTemplate template;
 
     @Test
     public void contextLoads() throws JsonProcessingException {
@@ -48,11 +53,11 @@ class QujingApplicationTests {
     }
 
     public static void main(String[] args) throws IOException {
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
-                Objects.requireNonNull(ClassLoader.getSystemResourceAsStream("static//sensi_words.txt"))
-                , StandardCharsets.UTF_8));
-        bufferedReader.readLine();
-        System.out.println(bufferedReader.readLine());
+        try {
+            MQUtil.send("这是一条测试数据.。。");
+        } catch (TimeoutException e) {
+            e.printStackTrace();
+        }
     }
 
 }

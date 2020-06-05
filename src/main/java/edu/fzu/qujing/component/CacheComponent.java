@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.DelayQueue;
@@ -15,10 +16,29 @@ import java.util.concurrent.DelayQueue;
 @Component
 public class CacheComponent implements ApplicationRunner {
 
+    @Autowired
+    ThreadPoolTaskExecutor threadPoolTaskExecutor;
+
+    @Autowired
+    TaskMapper taskMapper;
+
+    @Autowired
+    UserService userService;
+
+    @Autowired
+    TaskService taskService;
+
+    @Autowired
+    TypeService typeService;
+
+    private static Integer pages = 5;
+
     @Override
     public void run(ApplicationArguments args) throws Exception {
         delayiTaskInit();
+
         bloomFilterInit();
+
         RedisUtil.flushdb();
     }
 

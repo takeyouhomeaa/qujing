@@ -73,8 +73,13 @@ spring:
     host: 49.234.86.39
     port: 6379
     password: ozg123zxc
+  rabbitmq:
+    host: 47.100.49.47
+    port: 5672
+    username: ozg
+    password: ozg123zxc
+    virtual-host: /qujing
 
 mybatis-plus:
   mapper-locations: classpath*:mybatis/mapper/*.xml
   config-location: classpath:mybatis/mybatis-conf.xml
-

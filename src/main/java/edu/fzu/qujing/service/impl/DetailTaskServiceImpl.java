@@ -41,10 +41,14 @@ public class DetailTaskServiceImpl implements DetailTaskService {
         for(Task task:list) {
             DetailTask detailTask = new DetailTask();
             detailTask.setTask(task);
-            User sender = userService.getUserInfo(task.getSenderid());
-            User receiver = userService.getUserInfo(task.getReceiverid());
-            detailTask.setSender(sender);
-            detailTask.setReceiver(receiver);
+            if(task.getSenderid()!= null) {
+                User sender = userService.getUserInfo(task.getSenderid());
+                detailTask.setSender(sender);
+            }
+            if(task.getReceiverid() != null) {
+                User receiver = userService.getUserInfo(task.getReceiverid());
+                detailTask.setReceiver(receiver);
+            }
             detailTaskList.add(detailTask);
         }
         return detailTaskList;

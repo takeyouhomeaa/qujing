@@ -12,6 +12,7 @@ import edu.fzu.qujing.util.JwtUtil;
 import edu.fzu.qujing.util.MailUtil;
 import edu.fzu.qujing.util.RedisUtil;
 import io.jsonwebtoken.Claims;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.crypto.hash.SimpleHash;
@@ -27,6 +28,7 @@ import javax.annotation.Resource;
 import javax.naming.AuthenticationException;
 import java.util.List;
 
+@Slf4j
 @Service
 @CacheConfig(cacheNames = "user")
 @Transactional(rollbackFor = Exception.class)
@@ -53,10 +55,16 @@ public class UserServiceImpl implements UserService {
         user.setPassword(pwd);
         user.setState(1);
         userMapper.insert(user);
-        BloomFilterUtil.addIfNotExist(BloomFilterUtil.getBloomFilterToUser(),
-                user.getStudentId(),"bloomFilterToUser");
-        BloomFilterUtil.addIfNotExist(BloomFilterUtil.getBloomFilterToUser()
-                ,user.getPhone(),"bloomFilterToUser");
+        boolean bloomFilterToUser = BloomFilterUtil.addIfNotExist(BloomFilterUtil.getBloomFilterToUser(),
+                user.getStudentId(), "bloomFilterToUser");
+        if(bloomFilterToUser){
+            log.info("向布隆过滤器插入成功,插入的id为 {}",user.getStudentId());
+        }
+        bloomFilterToUser = BloomFilterUtil.addIfNotExist(BloomFilterUtil.getBloomFilterToUser()
+                , user.getPhone(), "bloomFilterToUser");
+        if(bloomFilterToUser){
+            log.info("向布隆过滤器插入成功,插入的id为 {}",user.getPhone());
+        }
         return user;
     }
 
@@ -83,12 +91,9 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Caching(
-            cacheable = {
-                    @Cacheable(key = "'getUserByStudentId(' + #result.studentId + ')'",unless = "#result == null")
-            },
             put = {
-                    @CachePut(key = "'getUserByStudentId(' + #result.studentId + ')'",unless = "#result == null"),
-                    @CachePut(key = "'getUserByPhone(' + #result.phone + ')'",unless = "#result == null")
+                    @CachePut(key = "'getUserByStudentId(' + #result.studentId + ')'",unless = "#result == null and #result.studentId == null"),
+                    @CachePut(key = "'getUserByPhone(' + #result.phone + ')'",unless = "#result == null and #result.studentId == null")
             }
     )
     public User updateReceiveTaskNumber(String studentId, int count) {

@@ -53,7 +53,7 @@ public class UserController {
 
     @ApiOperation(value = "获取用户信息")
     @SystemControllerLog("获取用户信息")
-    @GetMapping("/getUseInfo")
+    @GetMapping("/getUserInfo")
     public User getUserPoints(@ApiIgnore HttpServletRequest request) {
         return userService.getUserInfo(JwtUtil.getSubject(request));
     }

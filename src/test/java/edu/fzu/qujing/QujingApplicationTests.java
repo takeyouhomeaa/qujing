@@ -17,12 +17,8 @@ import edu.fzu.qujing.mapper.UserMapper;
 import edu.fzu.qujing.service.TaskService;
 import edu.fzu.qujing.service.TypeService;
 import edu.fzu.qujing.service.UserService;
-import edu.fzu.qujing.util.BloomFilterUtil;
-import edu.fzu.qujing.util.MQUtil;
-import edu.fzu.qujing.util.PhoneUtil;
-import edu.fzu.qujing.util.RedisUtil;
+import edu.fzu.qujing.util.*;
 import org.junit.jupiter.api.Test;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.annotation.CachePut;
@@ -44,12 +40,10 @@ import java.util.concurrent.TimeoutException;
 @SpringBootTest
 class QujingApplicationTests {
 
-    @Autowired
-    RabbitTemplate template;
 
     @Test
     public void contextLoads() throws JsonProcessingException {
-
+        System.out.println("111");
     }
 
     public static void main(String[] args) throws IOException {

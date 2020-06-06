@@ -1,20 +1,21 @@
-package edu.fzu.qujing.component.sensitivewords;
 
+package edu.fzu.qujing.component.sensitivewords;
+import edu.fzu.qujing.component.sensitivewords.StringPointer;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.util.TreeSet;
 
-/**
- * @author
- */
+
 @Data
-public class SensitiveNode implements Serializable {
+public class SensitiveNode implements Serializable{
+
+    private static final long serialVersionUID = 1L;
 
     /**
      * 头两个字符的mix，mix相同，两个字符相同
      */
-    protected final Integer headTwoCharMix;
+    protected final int headTwoCharMix;
 
     /**
      * 所有以这两个字符开头的词表
@@ -34,6 +35,5 @@ public class SensitiveNode implements Serializable {
         this.headTwoCharMix = headTwoCharMix;
         parent.next = this;
     }
-
 
 }

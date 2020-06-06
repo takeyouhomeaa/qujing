@@ -3,14 +3,13 @@ package edu.fzu.qujing.component.sensitivewords;
 import lombok.Data;
 
 import java.io.Serializable;
-
-/**
- * @author
- */
+import java.util.HashMap;
+import java.util.TreeMap;
 
 @Data
-public class StringPointer implements Serializable, CharSequence, Comparable<StringPointer> {
+public class StringPointer implements Serializable, CharSequence, Comparable<StringPointer>{
 
+    private static final long serialVersionUID = 1L;
 
     protected final char[] value;
 
@@ -18,13 +17,8 @@ public class StringPointer implements Serializable, CharSequence, Comparable<Str
 
     protected final int length;
 
-    protected int hash = 0;
+    private int hash = 0;
 
-    /**
-     * 构造函数
-     * 把字符串转化为字符数组
-     * @param str
-     */
     public StringPointer(String str){
         value = str.toCharArray();
         offset = 0;
@@ -36,13 +30,18 @@ public class StringPointer implements Serializable, CharSequence, Comparable<Str
         this.offset = offset;
         this.length = length;
     }
-    /**
-     * 该位置后（包含）的字符串，是否以某个词（word）开头
-     *
-     * @param i 从 0 到 length - 2
-     * @param word 词
-     * @return 是否？
-     */
+
+
+    public int nextTwoCharHash(int i){
+        return 31 * value[offset + i] + value[offset + i + 1];
+    }
+
+
+    public int nextTwoCharMix(int i){
+        return (value[offset + i] << 16) | value[offset + i + 1];
+    }
+
+
     public boolean nextStartsWith(int i, StringPointer word){
         // 是否长度超出
         if(word.length > length - i){
@@ -57,35 +56,7 @@ public class StringPointer implements Serializable, CharSequence, Comparable<Str
         return true;
     }
 
-    /**
-     * 计算该位置后两个字符的Mix码(包含该位置)
-     * i 从 0 到 length - 2
-     *
-     * @param i 字符数组下标
-     * @return
-     */
-    public Integer nextTwoCharMix(int i) {
-        return (value[offset + i] << 16) | value[offset + i + 1];
-    }
 
-    /**
-     * 计算该位置后（包含）2个字符的hash值
-     *
-     * i 从 0 到 length - 2
-     * @param i
-     * @return
-     */
-    public Integer nextTwoCharHash(int i){
-        return 31 * value[offset + i] + value[offset + i + 1];
-    }
-
-    /**
-     * 填充（替换）
-     *
-     * @param begin 从此位置开始（含）
-     * @param end 到此位置结束（不含）
-     * @param fillWith 以此字符填充（替换）
-     */
     public void fill(int begin, int end, char fillWith){
         for(int i = begin; i < end; i ++){
             value[offset + i] = fillWith;
@@ -113,6 +84,11 @@ public class StringPointer implements Serializable, CharSequence, Comparable<Str
     @Override
     public CharSequence subSequence(int start, int end) {
         return substring(start, end);
+    }
+
+    @Override
+    public String toString(){
+        return new String(value, offset, length);
     }
 
     @Override
@@ -148,25 +124,24 @@ public class StringPointer implements Serializable, CharSequence, Comparable<Str
         return false;
     }
 
-
     @Override
-    public int compareTo(StringPointer o) {
+    public int compareTo(StringPointer that) {
         int len1 = this.length;
-        int len2 = o.length;
+        int len2 = that.length;
         int lim = Math.min(len1, len2);
         char v1[] = this.value;
-        char v2[] = o.value;
+        char v2[] = that.value;
 
         int k = 0;
-        while (k < lim ) {
+        while (k < lim) {
             char c1 = v1[this.offset + k];
-            char c2 = v2[o.offset + k];
+            char c2 = v2[that.offset + k];
             if (c1 != c2) {
                 return c1 - c2;
             }
             k++;
         }
-
         return len1 - len2;
     }
+
 }

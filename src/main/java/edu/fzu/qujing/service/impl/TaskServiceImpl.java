@@ -97,7 +97,7 @@ public class TaskServiceImpl implements TaskService {
                 .eq("state", 1));
         Integer temp2 = getCount((new QueryWrapper<Task>()
                 .eq("state", 1)
-                .eq("studentId", studentId)));
+                .eq("senderid", studentId)));
         return (temp1 - temp2);
     }
 
@@ -142,12 +142,6 @@ public class TaskServiceImpl implements TaskService {
 
 
     @Override
-    @Caching(
-            evict = {
-                    @CacheEvict(key = "'listPublish(*)'"),
-            }
-    )
-    @CachePut(key = "'getDetailTask(' + #result.id + ')'",unless = "#result == null")
     public Task postTask(Map<String,String> map) {
 
 
@@ -185,6 +179,7 @@ public class TaskServiceImpl implements TaskService {
         BloomFilterUtil.addIfNotExist(BloomFilterUtil.getBloomFilterToTask(),
                 String.valueOf(id),"bloomFilterToTask");
 
+        RedisUtil.set("getDetailTask(" + id + ")",task);
         DelayQueueUtil.addDelayTaskToCancel(new DelayTask(id,studentId,1000 * 60 * 10));
         return task;
     }
@@ -221,11 +216,12 @@ public class TaskServiceImpl implements TaskService {
                 task.setState(2);
                 task.setReceiverid(studentId);
                 taskMapper.updateById(task);
+                System.out.println(studentId);
                 userService.updateReceiveTaskNumber(studentId, 1);
+                String key = "listAccept::" + studentId;
+                taskPageServiceImpl.saveCache(key, task, null);
                 return task;
             }
-            String key = "listAccept::" + studentId;
-            taskPageServiceImpl.saveCache(key, task, null);
         }
 
         return null;

@@ -118,18 +118,15 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
      */
     @Override
     public boolean activeUser(String phone,String check) {
-        String key = "register::" + phone;
+        String key = "verify::" + phone;
         String key2 = "toBeActivated::" + phone;
         if(RedisUtil.hasKey(key)) {
-            Object rs = RedisUtil.get(key);
-            if (rs.equals(check)) {
-                Object obj = RedisUtil.get(key2);
-                User user = (User)obj;
-                userService.save(user);
-                String key3 = "toBeActivated::" + user.getStudentId();
-                RedisUtil.del(key2,key3);
-                return true;
-            }
+            Object obj = RedisUtil.get(key2);
+            User user = (User)obj;
+            userService.save(user);
+            String key3 = "toBeActivated::" + user.getStudentId();
+            RedisUtil.del(key,key2,key3);
+            return true;
         }
         return false;
     }
@@ -188,6 +185,8 @@ public class AuthenticatedServiceImpl implements AuthenticatedService {
             String code = (String)rs;
             if(code.equals(check)){
                 RedisUtil.del(key);
+                String[] split = key.split("::");
+                RedisUtil.set("verify::" + split[1], "true");
                 return true;
             }
         }

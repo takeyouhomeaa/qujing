@@ -1,9 +1,6 @@
 package edu.fzu.qujing.component.sensitivewords;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Serializable;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.NavigableSet;
 import java.util.Objects;
@@ -22,10 +19,16 @@ public class SensitiveFilter implements Serializable {
     /**
      * 初始化敏感词过滤器
      */
-    public static final SensitiveFilter DEFAULT = new SensitiveFilter(
-            new BufferedReader(new InputStreamReader(
-                    Objects.requireNonNull(ClassLoader.getSystemResourceAsStream("static\\sensi_words.txt"))
-                    , StandardCharsets.UTF_8)));
+    public static  SensitiveFilter DEFAULT;
+
+    static {
+        try {
+            DEFAULT = new SensitiveFilter(
+                    new BufferedReader(new FileReader(new File(".\\sensitivewords\\sensi_words.txt"))));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 
 
     public SensitiveFilter(BufferedReader reader) {
@@ -101,7 +104,7 @@ public class SensitiveFilter implements Serializable {
         int i = 0;
         //用与判断是否替换,用于跳出循环
         boolean flag = false;
-        while ( i < sp.getLength() - 2){
+        while ( i < sp.getLength() - 1){
             //每次循环开始将其初始化为false
             flag = false;
             /*

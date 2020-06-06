@@ -49,10 +49,11 @@ public class BloomFilterUtil implements Serializable {
 
     public static boolean addIfNotExist(BloomFilter bloomFilter,String data,String key){
         boolean exist = bloomFilter.addIfNotExist(data);
-        if(exist) {
+        if(!exist) {
             saveFilterToFile(bloomFilter,key);
+            return true;
         }
-        return exist;
+        return false;
     }
 
     public static boolean contains(BloomFilter bloomFilter,String data) {

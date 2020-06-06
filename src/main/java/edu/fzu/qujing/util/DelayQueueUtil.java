@@ -75,4 +75,11 @@ public class DelayQueueUtil {
     public static void setDelayQueueToConfirm(DelayQueue<DelayTask> delayQueueToConfirm) {
         DelayQueueUtil.delayQueueToConfirm = delayQueueToConfirm;
     }
+
+    public static void main(String[] args) {
+        if(delayQueueToCancel != null) {
+
+        }
+
+    }
 }

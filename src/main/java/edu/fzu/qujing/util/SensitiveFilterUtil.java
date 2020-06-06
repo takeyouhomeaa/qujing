@@ -13,6 +13,9 @@ public class SensitiveFilterUtil {
     }
 
     public static String filter(String sentence){
-        return sensitiveFilter.filter(sentence, '*');
+        String filter = sensitiveFilter.filter(sentence, '*');
+        return filter;
     }
+
+
 }

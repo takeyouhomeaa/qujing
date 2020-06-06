@@ -212,7 +212,7 @@ public class AuthenticatedController {
     @SystemControllerLog("验证验证码接口,用于用户注册")
     @GetMapping("/verifyCaptcha/register")
     public ResponseEntity<String> verifyCaptchaToRegister(String phone,String check) {
-        if(authenticatedService.verifyCaptchaToRegister(phone,check)){
+        if(authenticatedService.verifyCaptchaToRegister(check,phone)){
             return ResponseEntity.ok("true");
         }
         return ResponseEntity.status(404).body("false");
@@ -233,7 +233,7 @@ public class AuthenticatedController {
     @SystemControllerLog("验证验证码接口,用于忘记密码")
     @GetMapping("/verifyCaptcha/forgetPwd")
     public ResponseEntity<String> verifyCaptchaToForgetPwd(String phone,String check) {
-        if(authenticatedService.verifyCaptchaToForgetPwd(phone,check)){
+        if(authenticatedService.verifyCaptchaToForgetPwd(check,phone)){
             return ResponseEntity.ok("true");
         }
         return ResponseEntity.status(404).body("false");

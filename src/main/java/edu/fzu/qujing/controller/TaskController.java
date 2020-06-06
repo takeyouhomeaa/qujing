@@ -186,7 +186,7 @@ public class TaskController {
     @SystemControllerLog("获取当前用户接受的任务列表")
     @ApiOperation(value = "获取当前用户接受的任务列表", notes = "URL传递pos,任务类型请使用type查询出全部的类型和状态，然后使用数组去赋值")
     @GetMapping("/listAccept/{pos}")
-    public List<DetailTask> listAcceptToFinished(@ApiIgnore @PathVariable("pos") Integer pos,
+    public List<DetailTask> listAccept(@ApiIgnore @PathVariable("pos") Integer pos,
                                  @ApiIgnore HttpServletRequest request) {
         String subject = JwtUtil.getSubject(request);
         return detailTaskService.listAccept(subject, pos);

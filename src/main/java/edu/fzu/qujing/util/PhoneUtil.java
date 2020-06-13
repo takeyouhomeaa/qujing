@@ -15,8 +15,8 @@ import java.util.UUID;
 
 public class PhoneUtil {
 
-    final private static String ACCESS_KEY_ID = "LTAI4G3reCHQUAiHY374JLZ8";
-    final private static String ACCESS_SECRET = "M5zXe6pwcqy0YebMNVZYBcWMlzUxc7";
+    final private static String ACCESS_KEY_ID = "阿里云AK";
+    final private static String ACCESS_SECRET = "";
     final private static String SIGN_NAME = "取经web应用";
 
     final public static String TEMPLATE_CODE = "SMS_191210506";
